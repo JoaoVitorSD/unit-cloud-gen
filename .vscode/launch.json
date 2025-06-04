@@ -1,0 +1,47 @@
+{
+    "version": "0.2.0",
+    "compounds": [
+        {
+            "name": "Start All (Frontend & Backend)",
+            "configurations": [
+                "Frontend: Vite",
+                "Backend: FastAPI"
+            ]
+        }
+    ],
+    "configurations": [
+        {
+            "name": "Frontend: Vite",
+            "type": "pwa-node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/frontend",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": [
+                "run",
+                "dev"
+            ],
+            "port": 9229,
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "name": "Backend: FastAPI",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/backend/app/main.py",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/backend"
+            },
+            "args": [
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8000",
+                "--reload"
+            ],
+            "module": "uvicorn",
+            "justMyCode": true
+        }
+    ]
+}

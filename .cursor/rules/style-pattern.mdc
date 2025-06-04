@@ -1,0 +1,58 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Primary Actions (Main Buttons)
+Background: --primary (slate-900 in light mode, slate-50 in dark mode)
+Text: --primary-foreground (slate-50 in light mode, slate-900 in dark mode)
+Use for: Main call-to-action buttons, important actions, submit buttons
+Secondary Actions (Secondary Buttons)
+Background: --secondary (slate-100 in light mode, slate-800 in dark mode)
+Text: --secondary-foreground (slate-900 in light mode, slate-50 in dark mode)
+Use for: Alternative actions, less prominent buttons
+Accent Elements
+Background: --accent (slate-100 in light mode, slate-800 in dark mode)
+Text: --accent-foreground (slate-900 in light mode, slate-50 in dark mode)
+Use for: Highlights, special features, interactive elements
+Destructive Actions (Delete/Danger)
+Background: --destructive (red-500 in light mode, red-400 in dark mode)
+Text: --destructive-foreground (slate-50 in both modes)
+Use for: Delete buttons, dangerous actions, error states
+Muted Elements
+Background: --muted (slate-100 in light mode, slate-800 in dark mode)
+Text: --muted-foreground (slate-500 in light mode, slate-400 in dark mode)
+Use for: Disabled states, subtle information, less important text
+Cards and Containers
+Background: --card (slate-50 in light mode, slate-900 in dark mode)
+Text: --card-foreground (slate-950 in light mode, slate-50 in dark mode)
+Use for: Cards, modals, popovers, containers
+Borders and Dividers
+Color: --border (slate-200 in light mode, slate-800 in dark mode)
+Use for: Borders, dividers, separators
+Input Fields
+Background: --background (slate-50 in light mode, slate-950 in dark mode)
+Border: --input (slate-200 in light mode, slate-800 in dark mode)
+Focus Ring: --ring (slate-400 in light mode, slate-700 in dark mode)
+Use for: Text inputs, select boxes, checkboxes
+General Text
+Primary Text: --foreground (slate-950 in light mode, slate-50 in dark mode)
+Secondary Text: --muted-foreground (slate-500 in light mode, slate-400 in dark mode)
+Use for: Body text, headings, labels
+Hover States
+Primary Buttons: Use slate-800 in light mode, slate-100 in dark mode
+Secondary Buttons: Use slate-200 in light mode, slate-700 in dark mode
+Links: Use slate-700 in light mode, slate-300 in dark mode
+Focus States
+Always use --ring color with appropriate opacity
+Example: rgb(var(--ring) / 0.5)
+Disabled States
+Use --muted for background
+Use --muted-foreground for text
+Reduce opacity to 0.5-0.7
+This color system ensures:
+Consistent visual hierarchy
+Clear action importance
+Good contrast for accessibility
+Smooth dark/light mode transitions
+Professional and modern appearance

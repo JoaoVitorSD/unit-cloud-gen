@@ -1,0 +1,24 @@
+{
+    "python.pythonPath": "./backend/.venv/bin/python",
+    "python.envFile": "${workspaceFolder}/backend/.env",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit",
+        "source.fixAll": "explicit"
+    },
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/.mypy_cache": true,
+        "**/.venv": true,
+        "**/node_modules": true
+    },
+    "eslint.workingDirectories": [
+        {
+            "mode": "auto"
+        }
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/backend"
+    ]
+}
