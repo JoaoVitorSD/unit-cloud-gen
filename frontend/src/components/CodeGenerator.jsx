@@ -56,7 +56,7 @@ const CodeGenerator = () => {
     const monacoLang = languages.find(l => l.id === selectedLanguage)?.monaco || 'javascript';
 
     return (
-        <div className="fixed right-0 top-0 h-screen w-[35vw] bg-background border-l border-border shadow-2xl">
+        <div className="h-[90vh] w-[35vw] bg-background border-l border-border shadow-2xl">
             <Card className="h-full rounded-none border-0 bg-card">
                 {/* Header */}
                 <CardHeader className="border-b border-border bg-muted/30 p-4">

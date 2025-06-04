@@ -92,6 +92,8 @@
   --sidebar-ring: oklch(0.704 0.04 256.788);
 }
 
+
+
 .dark {
   --background: rgb(var(--slate-950));
   --foreground: rgb(var(--slate-50));

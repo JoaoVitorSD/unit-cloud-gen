@@ -25,7 +25,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className={`min-h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
         <Header darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
-        <main className="container mx-auto px-4 py-8 flex-1">
+        <main className="container flex-1">
           <CodeGenerator />
         </main>
       </div>
