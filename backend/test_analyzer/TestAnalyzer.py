@@ -17,8 +17,8 @@ class CoverageResult:
     coverage_percentage: float
     lines_covered: int
     lines_total: int
-    branches_covered: Optional[int] = None
-    branches_total: Optional[int] = None
+    branch_coverage: Optional[float] = None  # Branch coverage percentage (0-100)
+    branches_total: Optional[int] = None  # Total number of branches
     functions_covered: Optional[int] = None
     functions_total: Optional[int] = None
     time_taken: float = 0.0
@@ -32,6 +32,8 @@ class CoverageResult:
     tests_failed: int = 0
     tests_passed: int = 0
     execution_error: Optional[str] = None
+    # Individual test results
+    test_details: Optional[list[Dict[str, Any]]] = None
 
 
 class BaseTestAnalyzer(ABC):

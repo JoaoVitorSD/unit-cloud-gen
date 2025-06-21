@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import List
+from dataclasses import dataclass, field
+from typing import Any, Dict, List
 
 from llm_client import TestGenerationResult, get_llm_client
 from test_analyzer import CoverageResult, get_test_analyzer
@@ -59,7 +59,7 @@ class TestQualityResult:
     actual_coverage: float = 0.0
     lines_covered: int = 0
     lines_total: int = 0
-    branches_covered: int = 0
+    branch_coverage: float = 0.0  # Branch coverage percentage (0-100)
     branches_total: int = 0
     coverage_error: str = ""
     # Test execution results
@@ -71,6 +71,8 @@ class TestQualityResult:
     tests_passed: int = 0
     execution_time: float = 0.0
     execution_error: str = ""
+    # Individual test results
+    test_details: List[Dict[str, Any]] = field(default_factory=list)
 
 UNIT_TEST_PROMPT = """
 You are a {language} expert. Generate complete unit tests for the following {language} code:
@@ -194,8 +196,8 @@ def evaluate_test_quality(code: str, test_code: str, language: str = "python") -
                 actual_coverage=actual_coverage_result.coverage_percentage,
                 lines_covered=actual_coverage_result.lines_covered,
                 lines_total=actual_coverage_result.lines_total,
-                branches_covered=actual_coverage_result.branches_covered or 0,
-                branches_total=actual_coverage_result.branches_total or 0,
+                branch_coverage=actual_coverage_result.branch_coverage or 0.0,  # Branch coverage percentage
+                branches_total=actual_coverage_result.branches_total or 0,  # May be None from Jest
                 coverage_error=actual_coverage_result.error_message or "",
                 test_execution_success=actual_coverage_result.test_execution_success,
                 test_suites_total=actual_coverage_result.test_suites_total,
@@ -204,7 +206,8 @@ def evaluate_test_quality(code: str, test_code: str, language: str = "python") -
                 tests_failed=actual_coverage_result.tests_failed,
                 tests_passed=actual_coverage_result.tests_passed,
                 execution_time=actual_coverage_result.time_taken,
-                execution_error=actual_coverage_result.execution_error or ""
+                execution_error=actual_coverage_result.execution_error or "",
+                test_details=actual_coverage_result.test_details or []
             )
         else:
             # Fallback if JSON parsing fails
@@ -219,7 +222,7 @@ def evaluate_test_quality(code: str, test_code: str, language: str = "python") -
                 actual_coverage=actual_coverage_result.coverage_percentage,
                 lines_covered=actual_coverage_result.lines_covered,
                 lines_total=actual_coverage_result.lines_total,
-                branches_covered=actual_coverage_result.branches_covered or 0,
+                branch_coverage=actual_coverage_result.branch_coverage or 0.0,
                 branches_total=actual_coverage_result.branches_total or 0,
                 coverage_error=actual_coverage_result.error_message or "",
                 test_execution_success=actual_coverage_result.test_execution_success,
@@ -229,7 +232,8 @@ def evaluate_test_quality(code: str, test_code: str, language: str = "python") -
                 tests_failed=actual_coverage_result.tests_failed,
                 tests_passed=actual_coverage_result.tests_passed,
                 execution_time=actual_coverage_result.time_taken,
-                execution_error=actual_coverage_result.execution_error or f"Failed to parse evaluation response: {response.tests}"
+                execution_error=actual_coverage_result.execution_error or f"Failed to parse evaluation response: {response.tests}",
+                test_details=actual_coverage_result.test_details or []
             )
             
     except Exception as e:
@@ -246,7 +250,7 @@ def evaluate_test_quality(code: str, test_code: str, language: str = "python") -
             actual_coverage=actual_coverage_result.coverage_percentage,
             lines_covered=actual_coverage_result.lines_covered,
             lines_total=actual_coverage_result.lines_total,
-            branches_covered=actual_coverage_result.branches_covered or 0,
+            branch_coverage=actual_coverage_result.branch_coverage or 0.0,
             branches_total=actual_coverage_result.branches_total or 0,
             coverage_error=actual_coverage_result.error_message or "",
             test_execution_success=actual_coverage_result.test_execution_success,
@@ -256,7 +260,8 @@ def evaluate_test_quality(code: str, test_code: str, language: str = "python") -
             tests_failed=actual_coverage_result.tests_failed,
             tests_passed=actual_coverage_result.tests_passed,
             execution_time=actual_coverage_result.time_taken,
-            execution_error=actual_coverage_result.execution_error or f"Evaluation failed: {str(e)}"
+            execution_error=actual_coverage_result.execution_error or f"Evaluation failed: {str(e)}",
+            test_details=actual_coverage_result.test_details or []
         )
 
 

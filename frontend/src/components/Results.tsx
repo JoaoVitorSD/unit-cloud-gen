@@ -29,7 +29,7 @@ interface TestQualityResults {
   actual_coverage: number;
   lines_covered: number;
   lines_total: number;
-  branches_covered: number;
+  branch_coverage: number; // Branch coverage percentage (0-100)
   branches_total: number;
   coverage_error: string;
   // Test execution results
@@ -41,6 +41,12 @@ interface TestQualityResults {
   tests_passed: number;
   execution_time: number;
   execution_error: string;
+  // Individual test results
+  test_details?: Array<{
+    suite: string;
+    name: string;
+    status: string;
+  }>;
 }
 
 interface ResultsProps {
@@ -92,16 +98,11 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
   const coverageData = qualityResults
     ? {
         codeCoverage: qualityResults.actual_coverage,
-        branchCoverage:
-          qualityResults.branches_total > 0
-            ? (qualityResults.branches_covered /
-                qualityResults.branches_total) *
-              100
-            : 0,
+        branchCoverage: qualityResults.branch_coverage, // Already a percentage
         estimatedCoverage: qualityResults.coverage_estimate,
         linesCovered: qualityResults.lines_covered,
         linesTotal: qualityResults.lines_total,
-        branchesCovered: qualityResults.branches_covered,
+        branchesCovered: qualityResults.branch_coverage, // Branch coverage percentage
         branchesTotal: qualityResults.branches_total,
         hasError: !!qualityResults.coverage_error,
       }
@@ -214,12 +215,6 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
                     >
                       {coverageData.branchCoverage.toFixed(1)}%
                     </Badge>
-                    {coverageData.branchesTotal > 0 && (
-                      <div className="text-xs text-muted-foreground">
-                        {coverageData.branchesCovered}/
-                        {coverageData.branchesTotal} branches
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -335,6 +330,45 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
               <Separator />
             </>
           )}
+
+          {/* Individual Test Results */}
+          {qualityResults &&
+            qualityResults.test_details &&
+            qualityResults.test_details.length > 0 && (
+              <>
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <Code className="h-4 w-4" />
+                    Individual Test Results
+                  </h3>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {qualityResults.test_details.map((test, index) => (
+                      <div
+                        key={index}
+                        className={`flex items-center gap-2 text-sm p-2 rounded ${
+                          test.status === "passed"
+                            ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
+                            : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
+                        }`}
+                      >
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            test.status === "passed"
+                              ? "bg-green-500"
+                              : "bg-red-500"
+                          }`}
+                        />
+                        <span className="font-medium">
+                          {test.status === "passed" ? "✓" : "✕"}
+                        </span>
+                        <span className="truncate">{test.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Separator />
+              </>
+            )}
 
           {/* Quality Feedback Section */}
           {qualityResults && qualityResults.feedback.length > 0 && (

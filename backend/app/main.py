@@ -59,7 +59,7 @@ def evaluate_quality(req: TestQualityRequest):
             "actual_coverage": result.actual_coverage,
             "lines_covered": result.lines_covered,
             "lines_total": result.lines_total,
-            "branches_covered": result.branches_covered,
+            "branch_coverage": result.branch_coverage,
             "branches_total": result.branches_total,
             "coverage_error": result.coverage_error,
             # Test execution results
@@ -70,7 +70,9 @@ def evaluate_quality(req: TestQualityRequest):
             "tests_failed": result.tests_failed,
             "tests_passed": result.tests_passed,
             "execution_time": result.execution_time,
-            "execution_error": result.execution_error
+            "execution_error": result.execution_error,
+            # Individual test results
+            "test_details": result.test_details
         }
     except Exception as e:
         print(f"Error evaluating test quality: {e}")

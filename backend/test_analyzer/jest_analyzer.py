@@ -56,8 +56,8 @@ class JestAnalyzer(BaseTestAnalyzer):
                 coverage_percentage=container_result.get("coverage_percentage", 0.0),
                 lines_covered=container_result.get("lines_covered", 0),
                 lines_total=container_result.get("lines_total", 0),
-                branches_covered=container_result.get("branches_covered", 0),
-                branches_total=container_result.get("branches_total", 0),
+                branch_coverage=float(container_result.get("branch_coverage", 0.0)),  # Branch coverage percentage
+                branches_total=None,  # Jest doesn't provide total branch count
                 time_taken=time_taken,
                 error_message=container_result.get("error_message"),
                 coverage_details=container_result.get("coverage_details"),
@@ -67,7 +67,8 @@ class JestAnalyzer(BaseTestAnalyzer):
                 tests_total=container_result.get("tests_total", 0),
                 tests_failed=container_result.get("tests_failed", 0),
                 tests_passed=container_result.get("tests_passed", 0),
-                execution_error=container_result.get("execution_error")
+                execution_error=container_result.get("execution_error"),
+                test_details=container_result.get("test_details", [])
             )
             
             return coverage_result
@@ -94,24 +95,29 @@ class JestAnalyzer(BaseTestAnalyzer):
         """Parse Jest output to extract coverage and test results."""
         try:
             # Default values
-            result = {
+            result: Dict[str, Any] = {
                 "coverage_percentage": 0.0,
                 "lines_covered": 0,
                 "lines_total": 0,
+                "branch_coverage": 0.0,  # Branch coverage percentage
+                "branches_total": 0,
                 "test_execution_success": False,
                 "test_suites_total": 1,
                 "test_suites_failed": 0,
                 "tests_total": 0,
                 "tests_failed": 0,
                 "tests_passed": 0,
-                "execution_error": None
+                "execution_error": None,
+                "test_details": []  # Individual test results
             }
             
             # Parse coverage from stdout
-            result.update(self._parse_coverage_from_stdout(stdout))
+            coverage_data = self._parse_coverage_from_stdout(stdout)
+            result.update(coverage_data)
             
             # Parse test results from stderr
-            result.update(self._parse_test_results_from_stderr(stderr))
+            test_data = self._parse_test_results_from_stderr(stderr)
+            result.update(test_data)
             
             # Determine success
             result["test_execution_success"] = (
@@ -126,13 +132,16 @@ class JestAnalyzer(BaseTestAnalyzer):
                 "coverage_percentage": 0.0,
                 "lines_covered": 0,
                 "lines_total": 0,
+                "branch_coverage": 0.0,  # Branch coverage percentage
+                "branches_total": 0,
                 "test_execution_success": False,
                 "test_suites_total": 1,
                 "test_suites_failed": 1,
                 "tests_total": 0,
                 "tests_failed": 0,
                 "tests_passed": 0,
-                "execution_error": f"Failed to parse Jest output: {str(e)}"
+                "execution_error": f"Failed to parse Jest output: {str(e)}",
+                "test_details": []
             }
     
     def _parse_coverage_from_stdout(self, stdout: str) -> Dict[str, Any]:
@@ -141,7 +150,9 @@ class JestAnalyzer(BaseTestAnalyzer):
             result = {
                 "coverage_percentage": 0.0,
                 "lines_covered": 0,
-                "lines_total": 0
+                "lines_total": 0,
+                "branch_coverage": 0.0,  # Branch coverage percentage
+                "branches_total": 0
             }
             
             lines = stdout.split('\n')
@@ -162,16 +173,25 @@ class JestAnalyzer(BaseTestAnalyzer):
                 elif "source.js" in line and "|" in line:
                     # Extract specific file coverage
                     parts = line.split('|')
-                    if len(parts) >= 3:
+                    if len(parts) >= 5:  # Need at least 5 parts for all coverage metrics
                         try:
-                            # Look for coverage info in the format like "100 |       50 |     100 |     100"
-                            # We want the first percentage (statements coverage)
-                            coverage_info = parts[1].strip()
-                            if coverage_info and coverage_info != "% Stmts":
+                            # Format: "source.js |     100 |       50 |     100 |     100 | 2"
+                            # Parts: [0] filename, [1] statements, [2] branches, [3] functions, [4] lines
+                            statements_str = parts[1].strip()
+                            branches_str = parts[2].strip()
+                            
+                            if statements_str and statements_str != "% Stmts":
                                 try:
-                                    result["coverage_percentage"] = float(coverage_info)
+                                    result["coverage_percentage"] = float(statements_str)
                                 except ValueError:
                                     pass
+                            
+                            if branches_str and branches_str != "% Branch":
+                                try:
+                                    result["branch_coverage"] = float(branches_str)  # Branch coverage percentage
+                                except ValueError:
+                                    pass
+                                
                         except (ValueError, IndexError):
                             pass
             
@@ -182,21 +202,26 @@ class JestAnalyzer(BaseTestAnalyzer):
             return {
                 "coverage_percentage": 0.0,
                 "lines_covered": 0,
-                "lines_total": 0
+                "lines_total": 0,
+                "branch_coverage": 0.0,  # Branch coverage percentage
+                "branches_total": 0
             }
     
     def _parse_test_results_from_stderr(self, stderr: str) -> Dict[str, Any]:
         """Parse test results from Jest stderr."""
         try:
-            result = {
+            result: Dict[str, Any] = {
                 "test_suites_total": 1,
                 "test_suites_failed": 0,
                 "tests_total": 0,
                 "tests_failed": 0,
-                "tests_passed": 0
+                "tests_passed": 0,
+                "test_details": []
             }
             
             lines = stderr.split('\n')
+            current_suite = ""
+            test_details = []
             
             for line in lines:
                 # Test summary patterns
@@ -217,7 +242,25 @@ class JestAnalyzer(BaseTestAnalyzer):
                         result["tests_passed"] = int(match.group(1))
                         result["tests_failed"] = int(match.group(2)) if match.group(2) else 0
                         result["tests_total"] = int(match.group(3))
+                
+                # Extract individual test results
+                elif "PASS" in line and ".js" in line:
+                    # New test suite started
+                    current_suite = line.strip()
+                
+                elif "✓" in line or "✕" in line:
+                    # Individual test result
+                    test_match = re.match(r'\s*[✓✕]\s+(.+)', line)
+                    if test_match:
+                        test_name = test_match.group(1).strip()
+                        test_status = "passed" if "✓" in line else "failed"
+                        test_details.append({
+                            "suite": current_suite,
+                            "name": test_name,
+                            "status": test_status
+                        })
             
+            result["test_details"] = test_details
             return result
             
         except Exception as e:
@@ -227,5 +270,6 @@ class JestAnalyzer(BaseTestAnalyzer):
                 "test_suites_failed": 1,
                 "tests_total": 0,
                 "tests_failed": 0,
-                "tests_passed": 0
+                "tests_passed": 0,
+                "test_details": []
             } 
