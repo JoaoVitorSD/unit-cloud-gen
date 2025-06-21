@@ -117,12 +117,6 @@ Consider the following criteria:
 - Code quality and readability
 - Proper use of testing frameworks and assertions
 - Mock usage for external dependencies
-- Test organization and structure
-- Test naming and documentation
-- Assertion quality and comprehensiveness
-
-Note: Actual code coverage will be measured separately using coverage tools, so focus on the quality and comprehensiveness of the tests rather than precise coverage estimation.
-
 Respond in the following JSON format only:
 {{
     "quality_score": <number>,

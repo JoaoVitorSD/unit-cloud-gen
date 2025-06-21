@@ -53,18 +53,8 @@ function App() {
     null
   );
   const [qualityResults, setQualityResults] =
-    React.useState<TestQualityResults | null>(null);
+    React.useState<TestQualityResults | null | undefined>(null);
 
-  // Debug state changes
-  React.useEffect(() => {
-    console.log("App component - testResults updated:", testResults);
-  }, [testResults]);
-
-  React.useEffect(() => {
-    console.log("App component - qualityResults updated:", qualityResults);
-  }, [qualityResults]);
-
-  // Apply dark mode class to document on mount and when it changes
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add("dark");

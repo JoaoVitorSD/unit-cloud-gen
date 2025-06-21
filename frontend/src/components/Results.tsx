@@ -316,6 +316,39 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
                     </div>
                   )}
 
+                  {/* Generation Time */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span>Generation Time</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {testResults.time_taken.toFixed(2)}s
+                    </span>
+                  </div>
+
+                  {/* Tokens Used */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Code className="h-4 w-4" />
+                      <span>Tokens Used</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {testResults.tokens_used.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* Cost */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Coins className="h-4 w-4" />
+                      <span>Cost</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      ${testResults.estimated_cost.toFixed(4)}
+                    </span>
+                  </div>
+
                   {/* Execution Error */}
                   {qualityResults.execution_error && (
                     <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
@@ -325,6 +358,47 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
                       </span>
                     </div>
                   )}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {/* Performance Metrics (when no quality results) */}
+          {!qualityResults && (
+            <>
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground">
+                  Performance
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span>Generation Time</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {testResults.time_taken.toFixed(2)}s
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Code className="h-4 w-4" />
+                      <span>Tokens Used</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {testResults.tokens_used.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Coins className="h-4 w-4" />
+                      <span>Cost</span>
+                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      ${testResults.estimated_cost.toFixed(4)}
+                    </span>
+                  </div>
                 </div>
               </div>
               <Separator />
@@ -415,42 +489,6 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
               <Separator />
             </>
           )}
-
-          {/* Performance Metrics */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-foreground">Performance</h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
-                  <span>Time Spent</span>
-                </div>
-                <span className="text-sm font-medium text-foreground">
-                  {testResults.time_taken.toFixed(2)}s
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Code className="h-4 w-4" />
-                  <span>Tokens Used</span>
-                </div>
-                <span className="text-sm font-medium text-foreground">
-                  {testResults.tokens_used.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Coins className="h-4 w-4" />
-                  <span>Cost</span>
-                </div>
-                <span className="text-sm font-medium text-foreground">
-                  ${testResults.estimated_cost.toFixed(4)}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <Separator />
 
           {/* Test Information */}
           <div className="space-y-4">
