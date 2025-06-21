@@ -12,7 +12,7 @@
     "configurations": [
         {
             "name": "Frontend: Vite",
-            "type": "pwa-node",
+            "type": "node",
             "request": "launch",
             "cwd": "${workspaceFolder}/frontend",
             "runtimeExecutable": "npm",
@@ -40,7 +40,6 @@
                 "8000",
                 "--reload"
             ],
-            "module": "uvicorn",
             "justMyCode": true
         }
     ]

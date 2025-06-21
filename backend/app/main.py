@@ -1,112 +1,46 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from typing import Optional
-import boto3
 import os
-from dotenv import load_dotenv
-from .config import Settings
-from .services.llm import LLMService
-from .services.storage import StorageService
-from .models.code_generation import CodeGenerationRequest, CodeGenerationResponse
+import sys
 
-# Load environment variables
-load_dotenv()
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-# Initialize settings
-settings = Settings()
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from llm_client import LLM_CLIENTS
+from test_generator import generate_unit_tests
 
-# Initialize FastAPI app
-app = FastAPI(
-    title="Unit Cloud Gen API",
-    description="API for generating code using LLMs",
-    version="1.0.0"
-)
+app = FastAPI()
 
-# Configure CORS
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=["*"],  # Allows all origins
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
 )
 
-# Initialize services
-s3_client = boto3.client(
-    's3',
-    aws_access_key_id=settings.aws_access_key_id,
-    aws_secret_access_key=settings.aws_secret_access_key,
-    region_name=settings.aws_region
-)
+class CodeRequest(BaseModel):
+    code: str
+    provider: str = "openai"
+    model: str = "gpt-4"
 
-storage_service = StorageService(s3_client, settings.s3_bucket_name)
-llm_service = LLMService(settings.openai_api_key)
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {"status": "healthy"}
-
-@app.post("/api/generate", response_model=CodeGenerationResponse)
-async def generate_code(
-    request: CodeGenerationRequest,
-    file: Optional[UploadFile] = File(None)
-):
-    """
-    Generate code based on the provided request and optional file
-    """
+@app.post("/generate-tests")
+def generate_tests(req: CodeRequest):
     try:
-        # If a file is provided, upload it to S3
-        file_url = None
-        if file:
-            file_url = await storage_service.upload_file(file)
-
-        # Generate code using LLM
-        generated_code = await llm_service.generate_code(
-            prompt=request.prompt,
-            file_url=file_url,
-            language=request.language,
-            framework=request.framework
-        )
-
-        return CodeGenerationResponse(
-            code=generated_code,
-            file_url=file_url
-        )
-
+        print(f"Generating tests for {req.provider} {req.model} {req.code}")
+        tests = generate_unit_tests(req.code, req.provider, req.model)
+        return {"unit_tests": tests}
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error generating code: {str(e)}"
-        )
+        print(f"Error generating tests: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/providers")
+def get_providers():
+    return {"providers": list(LLM_CLIENTS.keys())}
 
-@app.get("/api/languages")
-async def get_supported_languages():
-    """Get list of supported programming languages"""
-    return {
-        "languages": [
-            "python",
-            "javascript",
-            "typescript",
-            "java",
-            "go",
-            "rust",
-            "csharp"
-        ]
-    }
+@app.get("/")
+def read_root():
+    return {"message": "Hello, World!"}
 
-@app.get("/api/frameworks")
-async def get_supported_frameworks():
-    """Get list of supported frameworks"""
-    return {
-        "frameworks": {
-            "python": ["fastapi", "django", "flask"],
-            "javascript": ["react", "vue", "angular", "express"],
-            "typescript": ["react", "vue", "angular", "express", "nest"],
-            "java": ["spring", "quarkus"],
-            "go": ["gin", "echo", "fiber"],
-            "rust": ["actix", "rocket", "axum"],
-            "csharp": [".net", "asp.net"]
-        }
-    } 
+
