@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import CodeGenerator from "./components/CodeGenerator";
 import Header from "./components/Header";
-import GeneratedCode from "./components/GeneratedCode";
 import Results from "./components/Results";
 
 // Create a client for TanStack Query
@@ -29,9 +28,6 @@ function App() {
         <Header darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
         <main className="flex">
           <CodeGenerator />
-          {/* Generated Code */}
-          <GeneratedCode />
-
           {/* Results */}
           <Results />
         </main>

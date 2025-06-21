@@ -11,9 +11,11 @@ class OpenAIClient:
         self.model = model
 
     def generate(self, prompt: str, temperature=0.3) -> str:
-        response = openai.completions.create(
+        response = openai.chat.completions.create(
             model=self.model,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": "Return only the test code — no explanations, no markdown, no triple backticks."},
+                {"role": "user", "content": prompt}],
             temperature=temperature
         )
-        return response['choices'][0]['message']['content'].strip()
+        return response.choices[0].message.content.strip()

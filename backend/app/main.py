@@ -24,12 +24,13 @@ class CodeRequest(BaseModel):
     code: str
     provider: str = "openai"
     model: str = "gpt-4"
+    language: str = "python"
 
 @app.post("/generate-tests")
 def generate_tests(req: CodeRequest):
     try:
-        print(f"Generating tests for {req.provider} {req.model} {req.code}")
-        tests = generate_unit_tests(req.code, req.provider, req.model)
+        print(f"Generating tests for {req.provider} {req.model} {req.language} {req.code}")
+        tests = generate_unit_tests(req.code, req.provider, req.model, req.language)
         return {"unit_tests": tests}
     except Exception as e:
         print(f"Error generating tests: {e}")
