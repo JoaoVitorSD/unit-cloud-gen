@@ -7,6 +7,7 @@ import React, { useState } from "react";
 
 interface GeneratedCodeProps {
   generatedCode: string;
+  setGeneratedCode: (code: string) => void;
   language: string;
   provider: string;
   model: string;
@@ -53,6 +54,7 @@ const languageConfigs: { [key: string]: LanguageConfig } = {
 
 const GeneratedCode: React.FC<GeneratedCodeProps> = ({
   generatedCode,
+  setGeneratedCode,
   language,
   provider,
   model,
@@ -125,12 +127,13 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
         </CardHeader>
 
         <CardContent className="flex-1 p-0 overflow-hidden">
-          <div className="h-[calc(100vh-180px)] p-4">
+          <div className="h-[60vh] p-4">
             <MonacoEditor
               height="100%"
               width="100%"
               language={config.monaco}
               value={generatedCode}
+              onChange={(value) => setGeneratedCode(value || "")}
               theme="vs-dark"
               options={{
                 fontSize: 14,
@@ -150,7 +153,9 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
                 formatOnPaste: true,
                 formatOnType: true,
                 fixedOverflowWidgets: true,
-                readOnly: true,
+                readOnly: false,
+                placeholder:
+                  "No tests generated yet, provide a code and click generate tests button",
               }}
             />
           </div>

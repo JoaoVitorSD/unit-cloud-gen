@@ -30,8 +30,13 @@ class CodeRequest(BaseModel):
 def generate_tests(req: CodeRequest):
     try:
         print(f"Generating tests for {req.provider} {req.model} {req.language} {req.code}")
-        tests = generate_unit_tests(req.code, req.provider, req.model, req.language)
-        return {"unit_tests": tests}
+        result = generate_unit_tests(req.code, req.provider, req.model, req.language)
+        return {
+            "tests": result.tests,
+            "tokens_used": result.tokens_used,
+            "estimated_cost": result.estimated_cost,
+            "time_taken": result.time_taken
+        }
     except Exception as e:
         print(f"Error generating tests: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,3 +1,4 @@
+import { getDefaultCodeForLanguage } from "@/assets/defaultCode";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -25,7 +26,10 @@ interface ColorMap {
 }
 
 interface GenerateTestsResponse {
-  unit_tests: string;
+  tests: string;
+  tokens_used: number;
+  estimated_cost: number;
+  time_taken: number;
 }
 
 interface ProvidersResponse {
@@ -39,6 +43,7 @@ const languages: Language[] = [
   { id: "go", name: "Go", monaco: "go" },
   { id: "typescript", name: "TypeScript", monaco: "typescript" },
   { id: "rust", name: "Rust", monaco: "rust" },
+  { id: "csharp", name: "C#", monaco: "csharp" },
 ];
 
 const modelOptions: { [key: string]: string[] } = {
@@ -47,9 +52,13 @@ const modelOptions: { [key: string]: string[] } = {
   local: ["local-model"],
 };
 
-const CodeGenerator: React.FC = () => {
+interface CodeGeneratorProps {
+  onTestResults?: (results: GenerateTestsResponse) => void;
+}
+
+const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
   const [code, setCode] = useState<string>(
-    '// Paste your code here\nfunction hello() {\n  console.log("Hello World!");\n}'
+    getDefaultCodeForLanguage("javascript")
   );
   const [selectedLanguage, setSelectedLanguage] =
     useState<string>("javascript");
@@ -88,6 +97,11 @@ const CodeGenerator: React.FC = () => {
 
     fetchProviders();
   }, [selectedProvider]);
+
+  // Update code when language changes
+  useEffect(() => {
+    setCode(getDefaultCodeForLanguage(selectedLanguage));
+  }, [selectedLanguage]);
 
   const handleLanguageChange = (value: string): void => {
     setSelectedLanguage(value);
@@ -129,8 +143,9 @@ const CodeGenerator: React.FC = () => {
       }
 
       const data: GenerateTestsResponse = await response.json();
-      setGeneratedTests(data.unit_tests);
-      console.log("Generated tests:", data.unit_tests);
+      setGeneratedTests(data.tests);
+      onTestResults?.(data);
+      console.log("Generated tests:", data);
     } catch (err) {
       console.error("Error generating tests:", err);
       setError(err instanceof Error ? err.message : "Failed to generate tests");
@@ -155,6 +170,7 @@ const CodeGenerator: React.FC = () => {
       go: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200",
       typescript: "bg-blue-100 text-blue-800 hover:bg-blue-200",
       rust: "bg-orange-100 text-orange-800 hover:bg-orange-200",
+      csharp: "bg-purple-100 text-purple-800 hover:bg-purple-200",
     };
     return (
       colors[lang] || "bg-accent text-accent-foreground hover:bg-accent/80"
@@ -195,7 +211,7 @@ const CodeGenerator: React.FC = () => {
               </Badge>
             </div>
 
-            <div className="flex items-center gap-2 mt-4">
+            <div className="flex items-center gap-2 mt-3">
               <Select
                 value={selectedLanguage}
                 onValueChange={handleLanguageChange}
@@ -223,10 +239,6 @@ const CodeGenerator: React.FC = () => {
                 <Copy className="h-4 w-4" />
                 Copy
               </Button>
-            </div>
-
-            {/* AI Provider and Model Selection */}
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Zap className="h-4 w-4" />
                 <span>AI Settings:</span>
@@ -267,7 +279,7 @@ const CodeGenerator: React.FC = () => {
 
           {/* Code Editor */}
           <CardContent className="flex-1 p-0 overflow-hidden">
-            <div className="h-[calc(100vh-280px)] p-4">
+            <div className="h-[60vh] p-4">
               <MonacoEditor
                 height="100%"
                 width="100%"
@@ -334,15 +346,13 @@ const CodeGenerator: React.FC = () => {
         </Card>
       </div>
 
-      {/* Generated Tests Display */}
-      {generatedTests && (
-        <GeneratedCode
-          generatedCode={generatedTests}
-          language={selectedLanguage}
-          provider={selectedProvider}
-          model={selectedModel}
-        />
-      )}
+      <GeneratedCode
+        generatedCode={generatedTests}
+        setGeneratedCode={setGeneratedTests}
+        language={selectedLanguage}
+        provider={selectedProvider}
+        model={selectedModel}
+      />
     </div>
   );
 };

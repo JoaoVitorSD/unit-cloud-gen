@@ -14,8 +14,18 @@ const queryClient = new QueryClient({
   },
 });
 
+interface TestResults {
+  tests: string;
+  tokens_used: number;
+  estimated_cost: number;
+  time_taken: number;
+}
+
 function App() {
   const [darkMode, setDarkMode] = React.useState(true);
+  const [testResults, setTestResults] = React.useState<TestResults | null>(
+    null
+  );
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
@@ -27,9 +37,8 @@ function App() {
       <div className={`min-h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
         <Header darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
         <main className="flex">
-          <CodeGenerator />
-          {/* Results */}
-          <Results />
+          <CodeGenerator onTestResults={setTestResults} />
+          <Results testResults={testResults} />
         </main>
       </div>
     </QueryClientProvider>

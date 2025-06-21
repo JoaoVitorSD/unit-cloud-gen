@@ -2,45 +2,59 @@
     "version": "0.2.0",
     "compounds": [
         {
-            "name": "Start All (Frontend & Backend)",
+            "name": "Start All (Frontend & Backend Debug)",
             "configurations": [
-                "Frontend: Vite",
-                "Backend: FastAPI"
-            ]
+                "Frontend: Vite Dev Server",
+                "Backend: FastAPI Debug"
+            ],
+            "presentation": {
+                "hidden": false,
+                "group": "",
+                "order": 1
+            }
         }
     ],
     "configurations": [
         {
-            "name": "Frontend: Vite",
-            "type": "node",
+            "name": "Frontend: Vite Dev Server",
+            "type": "node-terminal",
             "request": "launch",
+            "command": "npm run dev",
             "cwd": "${workspaceFolder}/frontend",
-            "runtimeExecutable": "npm",
-            "runtimeArgs": [
-                "run",
-                "dev"
-            ],
-            "port": 9229,
             "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "presentation": {
+                "hidden": false,
+                "group": "development",
+                "order": 2
+            }
         },
         {
-            "name": "Backend: FastAPI",
+            "name": "Backend: FastAPI Debug",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/backend/app/main.py",
-            "console": "integratedTerminal",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}/backend"
-            },
+            "module": "uvicorn",
             "args": [
+                "app.main:app",
                 "--host",
                 "0.0.0.0",
                 "--port",
                 "8000",
-                "--reload"
+                "--reload",
+                "--log-level",
+                "debug"
             ],
-            "justMyCode": true
+            "cwd": "${workspaceFolder}/backend",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/backend"
+            },
+            "justMyCode": false,
+            "presentation": {
+                "hidden": false,
+                "group": "development",
+                "order": 3
+            }
         }
     ]
 }
