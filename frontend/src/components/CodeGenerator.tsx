@@ -54,8 +54,22 @@ interface TestQualityResponse {
   execution_error: string;
 }
 
-interface ProvidersResponse {
-  providers: string[];
+interface ModelInfo {
+  id: string;
+  name: string;
+  description: string;
+}
+
+interface ProviderInfo {
+  name: string;
+  description: string;
+  models: ModelInfo[];
+}
+
+interface ModelsResponse {
+  models_by_provider: {
+    [key: string]: ProviderInfo;
+  };
 }
 
 const languages: Language[] = [
@@ -67,12 +81,6 @@ const languages: Language[] = [
   { id: "rust", name: "Rust", monaco: "rust" },
   { id: "csharp", name: "C#", monaco: "csharp" },
 ];
-
-const modelOptions: { [key: string]: string[] } = {
-  openai: ["gpt-4", "gpt-4-turbo", "gpt-3.5-turbo"],
-  anthropic: ["claude-3-sonnet", "claude-3-haiku"],
-  local: ["local-model"],
-};
 
 interface CodeGeneratorProps {
   onTestResults?: (results: GenerateTestsResponse) => void;
@@ -89,40 +97,45 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
   const [selectedLanguage, setSelectedLanguage] =
     useState<string>("javascript");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [providers, setProviders] = useState<string[]>([]);
-  const [selectedProvider, setSelectedProvider] = useState<string>("openai");
-  const [selectedModel, setSelectedModel] = useState<string>("gpt-4");
+  const [selectedProvider, setSelectedProvider] = useState<string>("");
+  const [selectedModel, setSelectedModel] = useState<string>("");
   const [generatedTests, setGeneratedTests] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [modelsByProvider, setModelsByProvider] = useState<{
+    [key: string]: ProviderInfo;
+  }>({});
 
-  // Fetch available providers on component mount
+  // Fetch available providers and models on component mount
   useEffect(() => {
-    const fetchProviders = async (): Promise<void> => {
+    const fetchProvidersAndModels = async (): Promise<void> => {
       try {
-        const response = await fetch("http://localhost:8000/providers");
-        if (!response.ok) {
-          throw new Error("Failed to fetch providers");
+        // Fetch models (which includes provider info)
+        const modelsResponse = await fetch("http://localhost:8000/models");
+        if (!modelsResponse.ok) {
+          throw new Error("Failed to fetch models");
         }
-        const data: ProvidersResponse = await response.json();
-        setProviders(data.providers);
-        if (
-          data.providers.length > 0 &&
-          !data.providers.includes(selectedProvider)
-        ) {
-          setSelectedProvider(data.providers[0]);
-          const availableModels = modelOptions[data.providers[0]] || [];
-          if (availableModels.length > 0) {
-            setSelectedModel(availableModels[0]);
+        const modelsData: ModelsResponse = await modelsResponse.json();
+        setModelsByProvider(modelsData.models_by_provider);
+
+        // Set default provider and model
+        const providerKeys = Object.keys(modelsData.models_by_provider);
+        if (providerKeys.length > 0) {
+          const defaultProvider = providerKeys[0];
+          setSelectedProvider(defaultProvider);
+
+          const providerModels = modelsData.models_by_provider[defaultProvider];
+          if (providerModels && providerModels.models.length > 0) {
+            setSelectedModel(providerModels.models[0].id);
           }
         }
       } catch (err) {
-        console.error("Error fetching providers:", err);
-        setError("Failed to load providers");
+        console.error("Error fetching models:", err);
+        setError("Failed to load models");
       }
     };
 
-    fetchProviders();
-  }, [selectedProvider]);
+    fetchProvidersAndModels();
+  }, []);
 
   // Update code when language changes
   useEffect(() => {
@@ -135,14 +148,26 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
 
   const handleProviderChange = (value: string): void => {
     setSelectedProvider(value);
-    const availableModels = modelOptions[value] || [];
-    if (availableModels.length > 0) {
-      setSelectedModel(availableModels[0]);
+    const providerModels = modelsByProvider[value];
+    if (providerModels && providerModels.models.length > 0) {
+      setSelectedModel(providerModels.models[0].id);
     }
   };
 
   const handleModelChange = (value: string): void => {
     setSelectedModel(value);
+  };
+
+  // Helper functions to get current model and provider info
+  const getCurrentModelInfo = (): ModelInfo | null => {
+    const providerModels = modelsByProvider[selectedProvider];
+    return (
+      providerModels?.models.find((model) => model.id === selectedModel) || null
+    );
+  };
+
+  const getCurrentProviderInfo = (): ProviderInfo | null => {
+    return modelsByProvider[selectedProvider] || null;
   };
 
   const handleGenerate = async (): Promise<void> => {
@@ -243,7 +268,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
               </Badge>
             </div>
 
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex items-center flex-wrap gap-2 mt-3">
               <Select
                 value={selectedLanguage}
                 onValueChange={handleLanguageChange}
@@ -271,6 +296,9 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
                 <Copy className="h-4 w-4" />
                 Copy
               </Button>
+
+              <Separator orientation="vertical" className="h-6" />
+
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Zap className="h-4 w-4" />
                 <span>AI Settings:</span>
@@ -280,37 +308,83 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
                 value={selectedProvider}
                 onValueChange={handleProviderChange}
               >
-                <SelectTrigger className="w-[120px] bg-background border-input transition-colors duration-300">
-                  <SelectValue placeholder="Provider" />
+                <SelectTrigger className="w-auto min-w-[140px] flex-grow bg-background border-input transition-colors duration-300">
+                  {selectedProvider && modelsByProvider[selectedProvider] ? (
+                    <div className="flex flex-col items-start text-left">
+                      <span className="font-medium text-sm">
+                        {modelsByProvider[selectedProvider].name}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        {modelsByProvider[selectedProvider].description}
+                      </span>
+                    </div>
+                  ) : (
+                    <SelectValue placeholder="Provider" />
+                  )}
                 </SelectTrigger>
                 <SelectContent>
-                  {providers.map((provider: string) => (
-                    <SelectItem key={provider} value={provider}>
-                      {provider.charAt(0).toUpperCase() + provider.slice(1)}
-                    </SelectItem>
-                  ))}
+                  {Object.entries(modelsByProvider).map(
+                    ([providerId, providerInfo]) => (
+                      <SelectItem key={providerId} value={providerId}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">
+                            {providerInfo.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {providerInfo.description}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    )
+                  )}
                 </SelectContent>
               </Select>
 
               <Select value={selectedModel} onValueChange={handleModelChange}>
-                <SelectTrigger className="w-[150px] bg-background border-input transition-colors duration-300">
-                  <SelectValue placeholder="Model" />
+                <SelectTrigger className="w-auto min-w-[200px] flex-grow bg-background border-input transition-colors duration-300">
+                  {getCurrentModelInfo() ? (
+                    <div className="flex flex-col items-start text-left">
+                      <span className="font-medium text-sm">
+                        {getCurrentModelInfo()?.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        {getCurrentModelInfo()?.description}
+                      </span>
+                    </div>
+                  ) : (
+                    <SelectValue placeholder="Model" />
+                  )}
                 </SelectTrigger>
                 <SelectContent>
-                  {(modelOptions[selectedProvider] || []).map(
-                    (model: string) => (
-                      <SelectItem key={model} value={model}>
-                        {model}
+                  {(modelsByProvider[selectedProvider]?.models || []).map(
+                    (model: ModelInfo) => (
+                      <SelectItem key={model.id} value={model.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{model.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {model.description}
+                          </span>
+                        </div>
                       </SelectItem>
                     )
                   )}
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Current Selection Info */}
+            {getCurrentProviderInfo() && getCurrentModelInfo() && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                <span className="font-medium">Provider:</span>{" "}
+                {getCurrentProviderInfo()?.name} |{" "}
+                <span className="font-medium">Model:</span>{" "}
+                {getCurrentModelInfo()?.name}
+              </div>
+            )}
           </CardHeader>
 
           {/* Code Editor */}
-          <CardContent className="flex-1 p-0 overflow-hidden">
+          <CardContent className="flex-1 p-0">
             <div className="h-[60vh] p-4">
               <MonacoEditor
                 height="100%"

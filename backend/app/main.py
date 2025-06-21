@@ -82,6 +82,60 @@ def evaluate_quality(req: TestQualityRequest):
 def get_providers():
     return {"providers": list(LLM_CLIENTS.keys())}
 
+@app.get("/models")
+def get_models():
+    """Get available models organized by provider."""
+    from llm_client.local_client import LocalClient
+    from llm_client.openai_client import OpenAIClient
+
+    # Get models from each client
+    openai_models = OpenAIClient.get_available_models()
+    local_models = LocalClient.get_available_models()
+    
+    # Convert to the expected format
+    models_by_provider = {
+        "openai": {
+            "name": "OpenAI",
+            "description": "Cloud-based AI models",
+            "models": [
+                {
+                    "id": model_id,
+                    "name": model_info["name"],
+                    "description": model_info["description"]
+                }
+                for model_id, model_info in openai_models.items()
+            ]
+        },
+        "local": {
+            "name": "Local (Meta)",
+            "description": "Open source models via Ollama",
+            "models": [
+                {
+                    "id": model_id,
+                    "name": model_info["name"],
+                    "description": model_info["description"]
+                }
+                for model_id, model_info in local_models.items()
+            ]
+        }
+    }
+    
+    # Add Anthropic if available (you can add AnthropicClient later)
+    try:
+        # This would be added when AnthropicClient is implemented
+        models_by_provider["anthropic"] = {
+            "name": "Anthropic",
+            "description": "Claude AI models",
+            "models": [
+                {"id": "claude-3-sonnet", "name": "Claude 3 Sonnet", "description": "Balanced performance"},
+                {"id": "claude-3-haiku", "name": "Claude 3 Haiku", "description": "Fast and efficient"}
+            ]
+        }
+    except ImportError:
+        pass
+    
+    return {"models_by_provider": models_by_provider}
+
 @app.get("/")
 def read_root():
     return {"message": "Hello, World!"}

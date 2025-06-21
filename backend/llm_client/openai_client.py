@@ -20,8 +20,35 @@ class OpenAIClient(BaseLLMClient):
         "gpt-3.5-turbo": {"input": 0.001, "output": 0.002},
     }
     
+    # Available OpenAI models with descriptions
+    AVAILABLE_MODELS = {
+        "gpt-4": {
+            "name": "GPT-4",
+            "description": "Most capable model, best for complex tasks",
+            "max_tokens": 8192,
+            "pricing": {"input": 0.03, "output": 0.06}
+        },
+        "gpt-4-turbo": {
+            "name": "GPT-4 Turbo",
+            "description": "Faster and more efficient than GPT-4",
+            "max_tokens": 128000,
+            "pricing": {"input": 0.01, "output": 0.03}
+        },
+        "gpt-3.5-turbo": {
+            "name": "GPT-3.5 Turbo",
+            "description": "Fast and cost-effective for most tasks",
+            "max_tokens": 16385,
+            "pricing": {"input": 0.001, "output": 0.002}
+        }
+    }
+    
     def __init__(self, model: str = "gpt-4"):
         super().__init__(model)
+    
+    @classmethod
+    def get_available_models(cls) -> dict:
+        """Get list of available OpenAI models with their information."""
+        return cls.AVAILABLE_MODELS.copy()
     
     def generate_tests(self, prompt: str, temperature: float = 0.3) -> TestGenerationResult:
         """Generate unit tests using OpenAI's API."""
