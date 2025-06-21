@@ -2,8 +2,30 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import MonacoEditor from "@monaco-editor/react";
-import { Check, Code, Copy } from "lucide-react";
+import { Check, Code, Copy, Star } from "lucide-react";
 import React, { useState } from "react";
+
+interface TestQualityResponse {
+  quality_score: number;
+  feedback: string[];
+  suggestions: string[];
+  coverage_estimate: number;
+  actual_coverage: number;
+  lines_covered: number;
+  lines_total: number;
+  branches_covered: number;
+  branches_total: number;
+  coverage_error: string;
+  // Test execution results
+  test_execution_success: boolean;
+  test_suites_total: number;
+  test_suites_failed: number;
+  tests_total: number;
+  tests_failed: number;
+  tests_passed: number;
+  execution_time: number;
+  execution_error: string;
+}
 
 interface GeneratedCodeProps {
   generatedCode: string;
@@ -11,6 +33,8 @@ interface GeneratedCodeProps {
   language: string;
   provider: string;
   model: string;
+  originalCode: string;
+  onQualityResults?: (results: TestQualityResponse) => void;
 }
 
 interface LanguageConfig {
@@ -64,8 +88,17 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
   language,
   provider,
   model,
+  originalCode,
+  onQualityResults,
 }) => {
   const [copied, setCopied] = useState<boolean>(false);
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [testExecutionStatus, setTestExecutionStatus] = useState<{
+    success: boolean;
+    failed: number;
+    total: number;
+    error?: string;
+  } | null>(null);
 
   const config = languageConfigs[language] || languageConfigs.javascript;
 
@@ -76,6 +109,58 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy code:", err);
+    }
+  };
+
+  const handleAnalyze = async (): Promise<void> => {
+    if (!generatedCode.trim() || !originalCode.trim()) {
+      return;
+    }
+
+    console.log("Starting quality analysis...");
+    setIsAnalyzing(true);
+
+    try {
+      const requestBody = {
+        code: originalCode,
+        test_code: generatedCode,
+        language: language,
+      };
+      console.log("Quality analysis request:", requestBody);
+
+      const response = await fetch(
+        "http://localhost:8000/evaluate-test-quality",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data: TestQualityResponse = await response.json();
+      console.log("Test analysis response:", data);
+
+      // Pass the quality results back to the parent component
+      onQualityResults?.(data);
+      console.log("Quality results passed to parent component");
+
+      // Update test execution status
+      setTestExecutionStatus({
+        success: data.test_execution_success,
+        failed: data.tests_failed,
+        total: data.tests_total,
+        error: data.execution_error || undefined,
+      });
+    } catch (err) {
+      console.error("Error analyzing tests:", err);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -105,6 +190,33 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
             </Badge>
           </div>
 
+          {/* Test Execution Status */}
+          {testExecutionStatus && (
+            <div className="mt-2 p-2 rounded border">
+              <div className="flex items-center gap-2 text-sm">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    testExecutionStatus.success ? "bg-green-500" : "bg-red-500"
+                  }`}
+                />
+                <span className="font-medium">
+                  {testExecutionStatus.success
+                    ? "Tests Passed"
+                    : "Tests Failed"}
+                </span>
+                <span className="text-muted-foreground">
+                  ({testExecutionStatus.failed} failed,{" "}
+                  {testExecutionStatus.total} total)
+                </span>
+              </div>
+              {testExecutionStatus.error && (
+                <div className="mt-1 text-xs text-red-600 dark:text-red-400">
+                  Error: {testExecutionStatus.error}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center gap-2 mt-4">
             <Button
               variant="outline"
@@ -121,6 +233,29 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
                 <>
                   <Copy className="h-4 w-4" />
                   Copy Tests
+                </>
+              )}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleAnalyze}
+              disabled={
+                isAnalyzing || !generatedCode.trim() || !originalCode.trim()
+              }
+              className="gap-2 hover:bg-accent transition-colors duration-200"
+              title="Evaluate test quality and get coverage metrics"
+            >
+              {isAnalyzing ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Star className="h-4 w-4" />
+                  Evaluate Quality
                 </>
               )}
             </Button>

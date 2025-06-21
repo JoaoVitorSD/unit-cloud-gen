@@ -32,6 +32,28 @@ interface GenerateTestsResponse {
   time_taken: number;
 }
 
+interface TestQualityResponse {
+  quality_score: number;
+  feedback: string[];
+  suggestions: string[];
+  coverage_estimate: number;
+  actual_coverage: number;
+  lines_covered: number;
+  lines_total: number;
+  branches_covered: number;
+  branches_total: number;
+  coverage_error: string;
+  // Test execution results
+  test_execution_success: boolean;
+  test_suites_total: number;
+  test_suites_failed: number;
+  tests_total: number;
+  tests_failed: number;
+  tests_passed: number;
+  execution_time: number;
+  execution_error: string;
+}
+
 interface ProvidersResponse {
   providers: string[];
 }
@@ -54,9 +76,13 @@ const modelOptions: { [key: string]: string[] } = {
 
 interface CodeGeneratorProps {
   onTestResults?: (results: GenerateTestsResponse) => void;
+  onQualityResults?: (results: TestQualityResponse) => void;
 }
 
-const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
+const CodeGenerator: React.FC<CodeGeneratorProps> = ({
+  onTestResults,
+  onQualityResults,
+}) => {
   const [code, setCode] = useState<string>(
     getDefaultCodeForLanguage("javascript")
   );
@@ -144,7 +170,9 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
 
       const data: GenerateTestsResponse = await response.json();
       setGeneratedTests(data.tests);
+      console.log("Generated tests data:", data);
       onTestResults?.(data);
+      console.log("Test results passed to parent component");
       console.log("Generated tests:", data);
     } catch (err) {
       console.error("Error generating tests:", err);
@@ -356,6 +384,8 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
         language={selectedLanguage}
         provider={selectedProvider}
         model={selectedModel}
+        originalCode={code}
+        onQualityResults={onQualityResults}
       />
     </div>
   );

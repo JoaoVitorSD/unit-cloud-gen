@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from llm_client import LLM_CLIENTS
-from test_generator import generate_unit_tests
+from test_generator import evaluate_test_quality, generate_unit_tests
 
 app = FastAPI()
 
@@ -26,6 +26,11 @@ class CodeRequest(BaseModel):
     model: str = "gpt-4"
     language: str = "python"
 
+class TestQualityRequest(BaseModel):
+    code: str
+    test_code: str
+    language: str = "python"
+
 @app.post("/generate-tests")
 def generate_tests(req: CodeRequest):
     try:
@@ -39,6 +44,36 @@ def generate_tests(req: CodeRequest):
         }
     except Exception as e:
         print(f"Error generating tests: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/evaluate-test-quality")
+def evaluate_quality(req: TestQualityRequest):
+    try:
+        print(f"Evaluating test quality for {req.language}")
+        result = evaluate_test_quality(req.code, req.test_code, req.language)
+        return {
+            "quality_score": result.quality_score,
+            "feedback": result.feedback,
+            "suggestions": result.suggestions,
+            "coverage_estimate": result.coverage_estimate,
+            "actual_coverage": result.actual_coverage,
+            "lines_covered": result.lines_covered,
+            "lines_total": result.lines_total,
+            "branches_covered": result.branches_covered,
+            "branches_total": result.branches_total,
+            "coverage_error": result.coverage_error,
+            # Test execution results
+            "test_execution_success": result.test_execution_success,
+            "test_suites_total": result.test_suites_total,
+            "test_suites_failed": result.test_suites_failed,
+            "tests_total": result.tests_total,
+            "tests_failed": result.tests_failed,
+            "tests_passed": result.tests_passed,
+            "execution_time": result.execution_time,
+            "execution_error": result.execution_error
+        }
+    except Exception as e:
+        print(f"Error evaluating test quality: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     
 @app.get("/providers")
