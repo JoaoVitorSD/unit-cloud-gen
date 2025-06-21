@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import React from "react";
+import React, { useEffect } from "react";
 import CodeGenerator from "./components/CodeGenerator";
 import Header from "./components/Header";
 import Results from "./components/Results";
@@ -22,19 +22,32 @@ interface TestResults {
 }
 
 function App() {
-  const [darkMode, setDarkMode] = React.useState(true);
+  const [darkMode, setDarkMode] = React.useState(() => {
+    // Check for saved preference or default to light mode
+    const saved = localStorage.getItem("darkMode");
+    return saved ? JSON.parse(saved) : false;
+  });
   const [testResults, setTestResults] = React.useState<TestResults | null>(
     null
   );
 
+  // Apply dark mode class to document on mount and when it changes
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("darkMode", JSON.stringify(darkMode));
+  }, [darkMode]);
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
-    document.documentElement.classList.toggle("dark");
   };
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className={`min-h-screen flex flex-col ${darkMode ? "dark" : ""}`}>
+      <div className="min-h-screen flex flex-col transition-colors duration-300">
         <Header darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
         <main className="flex">
           <CodeGenerator onTestResults={setTestResults} />

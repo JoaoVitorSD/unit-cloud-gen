@@ -19,15 +19,17 @@ const Results: React.FC<ResultsProps> = ({ testResults }) => {
   // If no test results, show empty state
   if (!testResults) {
     return (
-      <div className="h-[90vh] w-[30vw] bg-background border-l border-border shadow-2xl">
-        <Card className="h-full rounded-none border-0 bg-card">
-          <CardHeader className="border-b border-border bg-muted/30 p-4">
+      <div className="h-[90vh] w-[30vw] bg-background border-l border-border shadow-lg transition-colors duration-300">
+        <Card className="h-full rounded-none border-0 bg-card transition-colors duration-300">
+          <CardHeader className="border-b border-border bg-muted/30 p-4 transition-colors duration-300">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
+              <div className="p-2 bg-primary/10 rounded-lg transition-colors duration-300">
                 <BarChart className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-foreground">Results</h2>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Results
+                </h2>
                 <p className="text-sm text-muted-foreground">
                   Code analysis and metrics
                 </p>
@@ -47,9 +49,9 @@ const Results: React.FC<ResultsProps> = ({ testResults }) => {
   }
 
   // Calculate some basic metrics from the test results
-  const testLines = testResults.tests.split('\n').length;
+  const testLines = testResults.tests.split("\n").length;
   const testLength = testResults.tests.length;
-  
+
   // Mock coverage data since we don't have actual coverage yet
   const mockCoverage = {
     codeCoverage: Math.min(85 + Math.floor(testLines / 10), 95),
@@ -57,17 +59,19 @@ const Results: React.FC<ResultsProps> = ({ testResults }) => {
   };
 
   const getCoverageColor = (value: number): string => {
-    if (value >= 90) return "bg-green-100 text-green-800 hover:bg-green-200";
-    if (value >= 70) return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
-    return "bg-red-100 text-red-800 hover:bg-red-200";
+    if (value >= 90)
+      return "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30";
+    if (value >= 70)
+      return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/30";
+    return "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30";
   };
 
   return (
-    <div className="h-[90vh] w-[30vw] bg-background border-l border-border shadow-2xl">
-      <Card className="h-full rounded-none border-0 bg-card">
-        <CardHeader className="border-b border-border bg-muted/30 p-4">
+    <div className="h-[90vh] w-[30vw] bg-background border-l border-border shadow-lg transition-colors duration-300">
+      <Card className="h-full rounded-none border-0 bg-card transition-colors duration-300">
+        <CardHeader className="border-b border-border bg-muted/30 p-4 transition-colors duration-300">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
+            <div className="p-2 bg-primary/10 rounded-lg transition-colors duration-300">
               <BarChart className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -95,7 +99,7 @@ const Results: React.FC<ResultsProps> = ({ testResults }) => {
                   variant="secondary"
                   className={`${getCoverageColor(
                     mockCoverage.codeCoverage
-                  )} transition-colors`}
+                  )} transition-colors duration-300`}
                 >
                   {mockCoverage.codeCoverage}%
                 </Badge>
@@ -109,7 +113,7 @@ const Results: React.FC<ResultsProps> = ({ testResults }) => {
                   variant="secondary"
                   className={`${getCoverageColor(
                     mockCoverage.branchCoverage
-                  )} transition-colors`}
+                  )} transition-colors duration-300`}
                 >
                   {mockCoverage.branchCoverage}%
                 </Badge>
@@ -157,7 +161,9 @@ const Results: React.FC<ResultsProps> = ({ testResults }) => {
 
           {/* Test Information */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-foreground">Test Information</h3>
+            <h3 className="text-sm font-medium text-foreground">
+              Test Information
+            </h3>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -198,14 +204,14 @@ const Results: React.FC<ResultsProps> = ({ testResults }) => {
                   • Generation took longer than expected - check API status
                 </div>
               )}
-              {testLines < 10 && (
+              {mockCoverage.codeCoverage < 80 && (
                 <div className="text-sm text-muted-foreground">
-                  • Tests seem brief - consider adding more edge cases
+                  • Consider adding more test cases to improve coverage
                 </div>
               )}
-              {testLines >= 10 && (
+              {testLines < 10 && (
                 <div className="text-sm text-muted-foreground">
-                  • Good test coverage generated - review for completeness
+                  • Generated tests seem minimal - review the input code
                 </div>
               )}
             </div>

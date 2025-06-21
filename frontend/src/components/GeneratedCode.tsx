@@ -23,32 +23,38 @@ const languageConfigs: { [key: string]: LanguageConfig } = {
   javascript: {
     monaco: "javascript",
     framework: "Jest",
-    badgeColor: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+    badgeColor:
+      "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/30",
   },
   typescript: {
     monaco: "typescript",
     framework: "Jest",
-    badgeColor: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+    badgeColor:
+      "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30",
   },
   python: {
     monaco: "python",
     framework: "pytest",
-    badgeColor: "bg-blue-100 text-blue-800 hover:bg-blue-200",
+    badgeColor:
+      "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30",
   },
   java: {
     monaco: "java",
     framework: "JUnit",
-    badgeColor: "bg-red-100 text-red-800 hover:bg-red-200",
+    badgeColor:
+      "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30",
   },
   go: {
     monaco: "go",
     framework: "testing",
-    badgeColor: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200",
+    badgeColor:
+      "bg-cyan-100 text-cyan-800 hover:bg-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/30",
   },
   rust: {
     monaco: "rust",
     framework: "cargo test",
-    badgeColor: "bg-orange-100 text-orange-800 hover:bg-orange-200",
+    badgeColor:
+      "bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/30",
   },
 };
 
@@ -74,12 +80,12 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
   };
 
   return (
-    <div className="h-[90vh] w-[35vw] bg-background border-l border-border shadow-2xl">
-      <Card className="h-full rounded-none border-0 bg-card">
-        <CardHeader className="border-b border-border bg-muted/30 p-4">
+    <div className="h-[90vh] w-[35vw] bg-background border-l border-border shadow-lg transition-colors duration-300">
+      <Card className="h-full rounded-none border-0 bg-card transition-colors duration-300">
+        <CardHeader className="border-b border-border bg-muted/30 p-4 transition-colors duration-300">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg">
+              <div className="p-2 bg-green-500/10 rounded-lg transition-colors duration-300">
                 <Code className="h-5 w-5 text-green-600" />
               </div>
               <div>
@@ -93,7 +99,7 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
             </div>
             <Badge
               variant="secondary"
-              className={`${config.badgeColor} transition-colors`}
+              className={`${config.badgeColor} transition-colors duration-300`}
             >
               {config.framework}
             </Badge>
@@ -104,7 +110,7 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
               variant="outline"
               size="sm"
               onClick={handleCopy}
-              className="gap-2 hover:bg-accent"
+              className="gap-2 hover:bg-accent transition-colors duration-200"
             >
               {copied ? (
                 <>

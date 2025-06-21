@@ -164,13 +164,17 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
 
   const getLanguageBadgeColor = (lang: string): string => {
     const colors: ColorMap = {
-      javascript: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
-      python: "bg-blue-100 text-blue-800 hover:bg-blue-200",
-      java: "bg-red-100 text-red-800 hover:bg-red-200",
-      go: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200",
-      typescript: "bg-blue-100 text-blue-800 hover:bg-blue-200",
-      rust: "bg-orange-100 text-orange-800 hover:bg-orange-200",
-      csharp: "bg-purple-100 text-purple-800 hover:bg-purple-200",
+      javascript:
+        "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/30",
+      python:
+        "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30",
+      java: "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30",
+      go: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/30",
+      typescript:
+        "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30",
+      rust: "bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/30",
+      csharp:
+        "bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/30",
     };
     return (
       colors[lang] || "bg-accent text-accent-foreground hover:bg-accent/80"
@@ -183,13 +187,13 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
   return (
     <div className="flex h-[90vh]">
       {/* Original Code Editor */}
-      <div className="w-[35vw] bg-background border-l border-border shadow-2xl">
-        <Card className="h-full rounded-none border-0 bg-card">
+      <div className="w-[35vw] bg-background border-r border-border shadow-lg transition-colors duration-300">
+        <Card className="h-full rounded-none border-0 bg-card transition-colors duration-300">
           {/* Header */}
-          <CardHeader className="border-b border-border bg-muted/30 p-4">
+          <CardHeader className="border-b border-border bg-muted/30 p-4 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">
+                <div className="p-2 bg-primary/10 rounded-lg transition-colors duration-300">
                   <Code className="h-5 w-5 text-primary" />
                 </div>
                 <div>
@@ -205,7 +209,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
                 variant="secondary"
                 className={`${getLanguageBadgeColor(
                   selectedLanguage
-                )} transition-colors cursor-pointer`}
+                )} transition-colors duration-300 cursor-pointer`}
               >
                 {languages.find((lang) => lang.id === selectedLanguage)?.name}
               </Badge>
@@ -216,7 +220,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
                 value={selectedLanguage}
                 onValueChange={handleLanguageChange}
               >
-                <SelectTrigger className="w-[140px] bg-background border-input">
+                <SelectTrigger className="w-[140px] bg-background border-input transition-colors duration-300">
                   <SelectValue placeholder="Language" />
                 </SelectTrigger>
                 <SelectContent>
@@ -234,7 +238,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
                 variant="outline"
                 size="sm"
                 onClick={handleCopy}
-                className="gap-2 hover:bg-accent"
+                className="gap-2 hover:bg-accent transition-colors duration-200"
               >
                 <Copy className="h-4 w-4" />
                 Copy
@@ -248,7 +252,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
                 value={selectedProvider}
                 onValueChange={handleProviderChange}
               >
-                <SelectTrigger className="w-[120px] bg-background border-input">
+                <SelectTrigger className="w-[120px] bg-background border-input transition-colors duration-300">
                   <SelectValue placeholder="Provider" />
                 </SelectTrigger>
                 <SelectContent>
@@ -261,7 +265,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
               </Select>
 
               <Select value={selectedModel} onValueChange={handleModelChange}>
-                <SelectTrigger className="w-[150px] bg-background border-input">
+                <SelectTrigger className="w-[150px] bg-background border-input transition-colors duration-300">
                   <SelectValue placeholder="Model" />
                 </SelectTrigger>
                 <SelectContent>
@@ -312,7 +316,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
           </CardContent>
 
           {/* Footer */}
-          <div className="border-t border-border bg-muted/30 p-4">
+          <div className="border-t border-border bg-muted/30 p-4 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Settings className="h-4 w-4" />
@@ -326,7 +330,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({ onTestResults }) => {
                 <Button
                   onClick={handleGenerate}
                   disabled={isProcessing || !code.trim()}
-                  className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200 shadow-sm hover:shadow-md"
                 >
                   {isProcessing ? (
                     <>
