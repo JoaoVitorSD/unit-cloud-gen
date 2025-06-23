@@ -1,7 +1,7 @@
 import os
 import time
 import warnings
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 try:
     import torch
@@ -12,6 +12,13 @@ except ImportError:
     AutoTokenizer = None
     AutoModelForCausalLM = None
     HAS_TORCH = False
+
+# Check for bitsandbytes (for quantization)
+try:
+    import bitsandbytes
+    HAS_BITSANDBYTES = True
+except ImportError:
+    HAS_BITSANDBYTES = False
 
 from .base_client import BaseLLMClient, TestGenerationResult
 
@@ -25,24 +32,31 @@ class LocalClient(BaseLLMClient):
     
     # Available CodeLlama models from HuggingFace
     AVAILABLE_MODELS = {
-        "codellama-7b": {
-            "name": "CodeLlama 7B",
-            "description": "7B parameter code model - fastest inference",
-            "model_id": "codellama/CodeLlama-7b-hf",
-            "size": "7B",
-            "pricing": {"input": 0.0, "output": 0.0}
-        },
-        "codellama-13b": {
-            "name": "CodeLlama 13B", 
-            "description": "13B parameter code model - balanced performance",
-            "model_id": "codellama/CodeLlama-13b-hf",
-            "size": "13B",
-            "pricing": {"input": 0.0, "output": 0.0}
-        },
         "codellama-7b-instruct": {
             "name": "CodeLlama 7B Instruct",
             "description": "7B instruction-tuned model - best for code generation",
             "model_id": "codellama/CodeLlama-7b-Instruct-hf",
+            "size": "7B",
+            "pricing": {"input": 0.0, "output": 0.0}
+        },
+        "codellama-7b": {
+            "name": "CodeLlama 7B Base",
+            "description": "7B parameter base model - good for completion",
+            "model_id": "codellama/CodeLlama-7b-hf",
+            "size": "7B",
+            "pricing": {"input": 0.0, "output": 0.0}
+        },
+        "codellama-13b-instruct": {
+            "name": "CodeLlama 13B Instruct",
+            "description": "13B instruction-tuned model - higher quality",
+            "model_id": "codellama/CodeLlama-13b-Instruct-hf",
+            "size": "13B",
+            "pricing": {"input": 0.0, "output": 0.0}
+        },
+        "starcoder2-7b": {
+            "name": "StarCoder2 7B",
+            "description": "7B coding model - alternative to CodeLlama",
+            "model_id": "bigcode/starcoder2-7b",
             "size": "7B",
             "pricing": {"input": 0.0, "output": 0.0}
         }
@@ -87,6 +101,11 @@ class LocalClient(BaseLLMClient):
         model_id = model_info["model_id"]
         
         print(f"Loading model {model_id}... This may take a few minutes on first run.")
+        print(f"Device: {self.device}")
+        print(f"PyTorch available: {HAS_TORCH}")
+        print(f"Quantization available: {HAS_BITSANDBYTES}")
+        if torch.cuda.is_available():
+            print(f"CUDA memory: {torch.cuda.get_device_properties(0).total_memory / 1e9:.1f}GB")
         
         try:
             # Load tokenizer
@@ -100,30 +119,95 @@ class LocalClient(BaseLLMClient):
             if self.tokenizer.pad_token is None:
                 self.tokenizer.pad_token = self.tokenizer.eos_token
             
-            # Load model with appropriate settings based on device
-            model_kwargs = {
-                "trust_remote_code": True,
-                "torch_dtype": torch.float16 if self.device != "cpu" else torch.float32,
-            }
+            # Build loading strategies based on available hardware and libraries
+            loading_strategies = []
             
-            # Use 8-bit quantization if on GPU to save memory
+            # Add quantization strategies only if bitsandbytes is available and using CUDA
+            if self.device == "cuda" and HAS_BITSANDBYTES:
+                loading_strategies.extend([
+                    # Strategy 1: 8-bit quantization with CPU offload
+                    {
+                        "name": "8-bit quantized with CPU offload",
+                        "kwargs": {
+                            "trust_remote_code": True,
+                            "torch_dtype": torch.float16,
+                            "load_in_8bit": True,
+                            "device_map": "auto",
+                            "llm_int8_enable_fp32_cpu_offload": True
+                        }
+                    },
+                    # Strategy 2: 8-bit quantization without CPU offload
+                    {
+                        "name": "8-bit quantized",
+                        "kwargs": {
+                            "trust_remote_code": True,
+                            "torch_dtype": torch.float16,
+                            "load_in_8bit": True,
+                            "device_map": "auto"
+                        }
+                    }
+                ])
+            
+            # Add standard strategies
             if self.device == "cuda":
+                loading_strategies.append({
+                    "name": "half precision on GPU",
+                    "kwargs": {
+                        "trust_remote_code": True,
+                        "torch_dtype": torch.float16,
+                        "device_map": "auto"
+                    }
+                })
+            elif self.device == "mps":
+                loading_strategies.append({
+                    "name": "float32 on MPS",
+                    "kwargs": {
+                        "trust_remote_code": True,
+                        "torch_dtype": torch.float32
+                    }
+                })
+            
+            # Always add CPU fallback
+            loading_strategies.append({
+                "name": "CPU fallback",
+                "kwargs": {
+                    "trust_remote_code": True,
+                    "torch_dtype": torch.float32
+                }
+            })
+            
+            if not loading_strategies:
+                raise RuntimeError("No suitable loading strategies available")
+            
+            model_loaded = False
+            for strategy in loading_strategies:
                 try:
-                    model_kwargs["load_in_8bit"] = True
-                    model_kwargs["device_map"] = "auto"
-                except:
-                    # Fallback if 8-bit loading fails
-                    model_kwargs.pop("load_in_8bit", None)
-                    model_kwargs.pop("device_map", None)
+                    print(f"Trying {strategy['name']}...")
+                    self.model_instance = AutoModelForCausalLM.from_pretrained(
+                        model_id,
+                        **strategy["kwargs"]
+                    )
+                    
+                    # Move to device if not using device_map
+                    if "device_map" not in strategy["kwargs"]:
+                        self.model_instance = self.model_instance.to(self.device)
+                    
+                    print(f"✓ Successfully loaded with {strategy['name']}")
+                    model_loaded = True
+                    break
+                    
+                except Exception as e:
+                    print(f"✗ Failed with {strategy['name']}: {str(e)[:100]}...")
+                    if self.model_instance:
+                        del self.model_instance
+                        self.model_instance = None
+                    # Clear GPU cache before trying next strategy
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                    continue
             
-            self.model_instance = AutoModelForCausalLM.from_pretrained(
-                model_id,
-                **model_kwargs
-            )
-            
-            # Move to device if not using device_map
-            if "device_map" not in model_kwargs:
-                self.model_instance = self.model_instance.to(self.device)
+            if not model_loaded:
+                raise RuntimeError("Failed to load model with any strategy")
             
             self.model_instance.eval()  # Set to evaluation mode
             self._model_loaded = True
@@ -141,11 +225,15 @@ class LocalClient(BaseLLMClient):
             # Load model if not already loaded
             self._load_model()
             
+            # Check if model and tokenizer are properly loaded
+            if not self.tokenizer or not self.model_instance:
+                return self._create_error_result("Model or tokenizer not loaded properly")
+            
             # Tokenize input
             inputs = self.tokenizer(
                 prompt,
                 return_tensors="pt",
-                truncate=True,
+                truncation=True,
                 max_length=2048
             ).to(self.device)
             
