@@ -1,0 +1,203 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Unit Cloud Gen - AI-Powered Unit Test Generation Platform
+
+## Overview
+
+**Unit Cloud Gen** is a comprehensive, modern web application that leverages Large Language Models (LLMs) to automatically generate high-quality unit tests for source code across multiple programming languages. The platform combines the power of AI with robust test analysis capabilities to provide developers with an intelligent testing solution that not only generates tests but also evaluates their quality and coverage.
+
+## Core Value Proposition
+
+The project addresses a critical need in software development: creating comprehensive, high-quality unit tests efficiently. By using AI to generate tests and Docker-based analysis to evaluate them, Unit Cloud Gen helps developers:
+
+- **Accelerate Development**: Generate unit tests in seconds instead of hours
+- **Improve Code Quality**: Ensure comprehensive test coverage with AI-generated edge cases
+- **Support Multiple Languages**: Work with JavaScript, TypeScript, Python, Java, Go, Rust, and C#
+- **Evaluate Test Quality**: Get detailed feedback on test effectiveness and coverage
+- **Choose AI Providers**: Use cloud-based models (OpenAI) or local open-source models (Meta's Llama/CodeLlama via Ollama)
+
+## Project Architecture
+
+### 🎨 Frontend (React + TypeScript)
+
+- **Modern Web Interface**: Built with React, Vite, and TypeScript
+- **Monaco Editor Integration**: Professional code editor with syntax highlighting
+- **Real-time Preview**: Live code editing and test generation
+- **Dark/Light Mode**: Accessible design with smooth theme transitions
+- **Provider Selection**: Choose between different AI providers and models
+- **Multi-language Support**: Support for 7+ programming languages
+
+### ⚡ Backend (Python FastAPI)
+
+- **High-Performance API**: Async FastAPI backend for fast request handling
+- **LLM Integration**: Unified interface for multiple AI providers
+- **Test Generation Engine**: Intelligent prompt engineering for each language
+- **Quality Evaluation**: AI-powered test quality assessment
+- **Coverage Analysis**: Docker-based test execution and coverage reporting
+
+### 🤖 LLM Client Library
+
+A comprehensive Python library supporting multiple AI backends:
+
+**Supported Providers:**
+
+- **OpenAI**: GPT-4, GPT-3.5-turbo for cloud-based generation
+- **Local Models**: Meta's Llama 2 and CodeLlama via Ollama/PyTorch
+- **Future Support**: Anthropic Claude, additional open-source models
+
+**Key Features:**
+
+- Model management and caching
+- Quantization support for resource optimization
+- Chat and completion modes
+- Specialized code generation prompts
+- Error handling and fallback mechanisms
+
+### 🐳 Test Analyzer System
+
+Docker-based test execution and analysis engine:
+
+**Language Support:**
+
+- **JavaScript/TypeScript**: Jest with coverage reporting
+- **Python**: pytest with coverage.py integration
+- **Future**: Java (JUnit), Go, Rust, C# analyzers
+
+**Capabilities:**
+
+- Isolated test execution in Docker containers
+- Line and branch coverage analysis
+- Test execution metrics (pass/fail rates, timing)
+- Detailed error reporting and debugging information
+- Security through containerization
+
+### ☁️ Cloud Infrastructure (Terraform)
+
+Production-ready cloud deployment:
+
+- **AWS ECS**: Container orchestration for scalability
+- **Amazon RDS**: Database for user data and analytics
+- **Amazon S3**: File storage for code and test artifacts
+- **CloudFront + Route 53**: CDN and DNS management
+- **Auto-scaling**: Elastic scaling based on demand
+
+## Key Features
+
+### 🚀 Intelligent Test Generation
+
+- **Context-Aware**: Understands code structure and generates appropriate tests
+- **Edge Case Detection**: AI identifies boundary conditions and error scenarios
+- **Framework Integration**: Generates tests using appropriate testing frameworks
+- **Import Handling**: Automatically manages module imports and dependencies
+
+### 📊 Comprehensive Analysis
+
+- **Coverage Metrics**: Line, branch, and function coverage reporting
+- **Quality Scoring**: AI-powered evaluation of test effectiveness (1-10 scale)
+- **Performance Metrics**: Token usage, cost estimation, and generation time
+- **Detailed Feedback**: Specific suggestions for test improvement
+
+### 🔧 Developer Experience
+
+- **Professional Editor**: Monaco editor with IntelliSense and syntax highlighting
+- **Real-time Feedback**: Instant validation and error reporting
+- **Copy/Paste Integration**: Easy code sharing and integration
+- **Progress Indicators**: Clear status updates during generation and analysis
+
+### 🎯 Multi-Language Support
+
+Currently supported programming languages:
+
+- **JavaScript/TypeScript**: Jest, Mocha, Jasmine
+- **Python**: pytest, unittest
+- **Java**: JUnit (planned)
+- **Go**: testing package (planned)
+- **Rust**: cargo test (planned)
+- **C#**: NUnit/xUnit (planned)
+
+## Project Goals
+
+### Primary Goals
+
+1. **Democratize Quality Testing**: Make comprehensive unit testing accessible to developers of all skill levels
+2. **Accelerate Development Cycles**: Reduce time spent writing boilerplate tests
+3. **Improve Code Quality**: Generate edge cases and scenarios developers might miss
+4. **Educational Value**: Help developers learn testing best practices through AI-generated examples
+5. **Cost Efficiency**: Provide both cloud and local AI options for different budget requirements
+
+### Technical Goals
+
+1. **High Accuracy**: Generate syntactically correct and logically sound tests
+2. **Comprehensive Coverage**: Achieve high line and branch coverage percentages
+3. **Performance**: Sub-30 second test generation for typical code files
+4. **Scalability**: Handle multiple concurrent users with cloud infrastructure
+5. **Reliability**: Robust error handling and fallback mechanisms
+
+### Strategic Goals
+
+1. **Platform Expansion**: Support additional programming languages and frameworks
+2. **AI Model Diversity**: Integrate more AI providers and specialized models
+3. **Enterprise Features**: Team collaboration, test management, and analytics
+4. **Integration Ecosystem**: IDE plugins, CI/CD pipeline integration
+5. **Community Building**: Open-source components and developer community
+
+## Use Cases
+
+### For Individual Developers
+
+- **Rapid Prototyping**: Generate tests for new features quickly
+- **Legacy Code**: Add tests to existing code without comprehensive documentation
+- **Learning**: Understand testing patterns and best practices
+- **Code Reviews**: Ensure proper test coverage before merging
+
+### For Development Teams
+
+- **Standardization**: Consistent test quality across team members
+- **Onboarding**: Help new developers understand testing standards
+- **Technical Debt**: Systematically add tests to legacy codebases
+- **Quality Gates**: Enforce minimum test coverage requirements
+
+### For Organizations
+
+- **Cost Reduction**: Reduce time spent on manual test writing
+- **Quality Assurance**: Improve overall software quality and reliability
+- **Compliance**: Meet testing requirements for regulated industries
+- **Risk Mitigation**: Identify potential bugs and edge cases early
+
+## Technology Stack
+
+### Frontend
+
+- **React 18** with TypeScript
+- **Vite** for fast development and building
+- **TailwindCSS** for responsive styling
+- **Monaco Editor** for professional code editing
+- **TanStack Query** for efficient data fetching
+- **Lucide React** for consistent iconography
+
+### Backend
+
+- **Python 3.9+** with FastAPI
+- **Pydantic** for data validation
+- **Async/Await** for high performance
+- **CORS** middleware for cross-origin requests
+- **Docker** for containerized deployments
+
+### AI/ML
+
+- **OpenAI API** for cloud-based generation
+- **Ollama** for local model serving
+- **PyTorch** for direct model inference
+- **Hugging Face Transformers** for model management
+- **Meta's Llama/CodeLlama** models
+
+### Infrastructure
+
+- **Terraform** for Infrastructure as Code
+- **AWS** for cloud services (ECS, RDS, S3, CloudFront)
+- **Docker** for containerization
+- **GitHub Actions** for CI/CD (planned)
+

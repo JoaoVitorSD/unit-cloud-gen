@@ -55,6 +55,33 @@
                 "group": "development",
                 "order": 3
             }
+        },
+        {
+            "name": "LLM Client API",
+            "type": "python",
+            "request": "launch",    
+            "module": "uvicorn",
+            "args": [
+                "main:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "14000",
+                "--reload",
+                "--log-level",
+                "debug"
+            ],
+            "cwd": "${workspaceFolder}/llm_client",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/llm_client"
+            },
+            "justMyCode": false,
+            "presentation": {
+                "hidden": false,
+                "group": "llm_client",
+                "order": 4
+            }
         }
     ]
 }

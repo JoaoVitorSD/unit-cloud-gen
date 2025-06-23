@@ -122,7 +122,7 @@ ollama list
 The `LocalClient` in `backend/llm_client/local_client.py` is configured with:
 
 - **Default Model**: `codellama`
-- **Base URL**: `http://localhost:11434/api/generate`
+- **Base URL**: `http://localhost:14000/api/generate`
 - **Cost**: Free (local models)
 - **Timeout**: 120 seconds
 - **Parameters**:
@@ -142,7 +142,7 @@ from llm_client.local_client import LocalClient
 client = LocalClient(model="codellama:13b")
 
 # Use different server
-client = LocalClient(base_url="http://192.168.1.100:11434/api/generate")
+client = LocalClient(base_url="http://192.168.1.100:14000/api/generate")
 ```
 
 ## 🐛 Troubleshooting
@@ -156,7 +156,7 @@ client = LocalClient(base_url="http://192.168.1.100:11434/api/generate")
 ollama serve
 
 # Check if running
-curl http://localhost:11434/api/tags
+curl http://localhost:14000/api/tags
 ```
 
 **2. "Model not found"**
