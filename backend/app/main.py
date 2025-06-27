@@ -34,7 +34,7 @@ class TestQualityRequest(BaseModel):
 @app.post("/generate-tests")
 def generate_tests(req: CodeRequest):
     try:
-        print(f"Generating tests for {req.provider} {req.model} {req.language} {req.code}")
+        print(f"Generating tests for {req.provider} {req.model} {req.language}")
         result = generate_unit_tests(req.code, req.provider, req.model, req.language)
         return {
             "tests": result.tests,

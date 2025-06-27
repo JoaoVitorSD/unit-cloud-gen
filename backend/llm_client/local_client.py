@@ -20,6 +20,13 @@ try:
 except ImportError:
     HAS_BITSANDBYTES = False
 
+# Check for psutil (for memory monitoring)
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
+
 from .base_client import BaseLLMClient, TestGenerationResult
 
 # Suppress warnings for cleaner output
@@ -30,7 +37,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 class LocalClient(BaseLLMClient):
     """Local LLM client for running CodeLlama models directly with PyTorch."""
     
-    # Available CodeLlama models from HuggingFace
+    # Available local models from HuggingFace
     AVAILABLE_MODELS = {
         "codellama-7b-instruct": {
             "name": "CodeLlama 7B Instruct",
@@ -59,10 +66,31 @@ class LocalClient(BaseLLMClient):
             "model_id": "bigcode/starcoder2-7b",
             "size": "7B",
             "pricing": {"input": 0.0, "output": 0.0}
+        },
+        "deepseek-coder-1.3b-instruct": {
+            "name": "DeepSeek Coder 1.3B Instruct",
+            "description": "1.3B parameter model - fast and lightweight",
+            "model_id": "deepseek-ai/deepseek-coder-1.3b-instruct",
+            "size": "1.3B",
+            "pricing": {"input": 0.0, "output": 0.0}
+        },
+        "deepseek-coder-6.7b-instruct": {
+            "name": "DeepSeek Coder 6.7B Instruct",
+            "description": "6.7B parameter model - good balance of speed and quality",
+            "model_id": "deepseek-ai/deepseek-coder-6.7b-instruct",
+            "size": "6.7B",
+            "pricing": {"input": 0.0, "output": 0.0}
+        },
+        "deepseek-coder-33b-instruct": {
+            "name": "DeepSeek Coder 33B Instruct",
+            "description": "33B parameter model - highest quality, requires more resources",
+            "model_id": "deepseek-ai/deepseek-coder-33b-instruct",
+            "size": "33B",
+            "pricing": {"input": 0.0, "output": 0.0}
         }
     }
     
-    def __init__(self, model: str = "codellama-7b-instruct"):
+    def __init__(self, model: str = "deepseek-coder-1.3b-instruct", preload: bool = True, keep_in_memory: bool = True):
         super().__init__(model)
         
         if not HAS_TORCH:
@@ -70,18 +98,27 @@ class LocalClient(BaseLLMClient):
         
         # Validate model
         if model not in self.AVAILABLE_MODELS:
-            print(f"Warning: Model '{model}' not available. Using 'codellama-7b-instruct' as fallback.")
-            self.model = "codellama-7b-instruct"
+            print(f"Warning: Model '{model}' not available. Using 'deepseek-coder-1.3b-instruct' as fallback.")
+            self.model = "deepseek-coder-1.3b-instruct"
         
         # Model components
         self.tokenizer = None
         self.model_instance = None
         self.device = self._get_device()
         
-        # Model loading is lazy - only load when needed
+        # Memory management options
         self._model_loaded = False
+        self._loaded_model_name = None  # Track which model is currently loaded
+        self.keep_in_memory = keep_in_memory
+        self._memory_usage: Dict[str, float] = {}
         
         print(f"LocalClient initialized with model: {self.model} on device: {self.device}")
+        print(f"Keep in memory: {keep_in_memory}")
+        
+        # Preload model by default during startup
+        if preload:
+            print("Preloading model during startup...")
+            self.preload_model()
     
     def _get_device(self) -> str:
         """Determine the best device to use."""
@@ -94,8 +131,15 @@ class LocalClient(BaseLLMClient):
     
     def _load_model(self):
         """Load the model and tokenizer if not already loaded."""
-        if self._model_loaded:
+        # Check if we need to reload due to model change
+        if self._model_loaded and self._loaded_model_name == self.model:
             return
+        
+        # If a different model is loaded, unload it first
+        if self._model_loaded and self._loaded_model_name != self.model:
+            print(f"Model mismatch detected. Loaded: {self._loaded_model_name}, Requested: {self.model}")
+            print("Unloading current model...")
+            self.unload_model()
         
         model_info = self.AVAILABLE_MODELS[self.model]
         model_id = model_info["model_id"]
@@ -211,14 +255,45 @@ class LocalClient(BaseLLMClient):
             
             self.model_instance.eval()  # Set to evaluation mode
             self._model_loaded = True
+            self._loaded_model_name = self.model  # Track which model is loaded
             
             print(f"✓ Model {model_id} loaded successfully on {self.device}")
+            
+            # Record memory usage
+            self._record_memory_usage()
             
         except Exception as e:
             raise RuntimeError(f"Failed to load model {model_id}: {str(e)}")
     
+    def preload_model(self):
+        """Preload the model into memory for faster inference."""
+        try:
+            print(f"Preloading {self.model}...")
+            self._load_model()
+            print(f"✓ Model {self.model} preloaded successfully")
+        except Exception as e:
+            print(f"✗ Failed to preload model {self.model}: {str(e)}")
+    
+    def _record_memory_usage(self):
+        """Record current memory usage."""
+        if torch.cuda.is_available():
+            self._memory_usage = {
+                "gpu_allocated": torch.cuda.memory_allocated() / 1e9,  # GB
+                "gpu_reserved": torch.cuda.memory_reserved() / 1e9,    # GB
+                "gpu_max_allocated": torch.cuda.max_memory_allocated() / 1e9  # GB
+            }
+        elif HAS_PSUTIL:
+            process = psutil.Process()
+            self._memory_usage = {
+                "cpu_memory": process.memory_info().rss / 1e9  # GB
+            }
+        else:
+            self._memory_usage = {
+                "memory_monitoring": 0.0  # Fallback when psutil is not available
+            }
+    
     def generate_tests(self, prompt: str, temperature: float = 0.3) -> TestGenerationResult:
-        """Generate unit tests using CodeLlama directly with PyTorch."""
+        """Generate unit tests using local models directly with PyTorch."""
         self._start_timer()
         
         try:
@@ -229,9 +304,19 @@ class LocalClient(BaseLLMClient):
             if not self.tokenizer or not self.model_instance:
                 return self._create_error_result("Model or tokenizer not loaded properly")
             
+            # Format prompt to ensure code-only output
+            formatted_prompt = f"""<|system|>
+You are a coding assistant. Return only the test code - no explanations, no markdown, no triple backticks in english
+
+<|user|>
+{prompt}
+
+<|assistant|>
+"""
+            
             # Tokenize input
             inputs = self.tokenizer(
-                prompt,
+                formatted_prompt,
                 return_tensors="pt",
                 truncation=True,
                 max_length=2048
@@ -269,12 +354,19 @@ class LocalClient(BaseLLMClient):
             estimated_cost = self._calculate_cost(tokens_used)
             time_taken = self._get_elapsed_time()
             
-            return TestGenerationResult(
+            result = TestGenerationResult(
                 tests=generated_text,
                 tokens_used=tokens_used,
                 estimated_cost=estimated_cost,
                 time_taken=time_taken
             )
+            
+            # Optionally unload model to free memory
+            if not self.keep_in_memory:
+                print("Unloading model from memory...")
+                self.unload_model()
+            
+            return result
             
         except torch.cuda.OutOfMemoryError:
             return self._create_error_result(
@@ -312,14 +404,21 @@ class LocalClient(BaseLLMClient):
         """Check if model is loaded in memory."""
         return self._model_loaded
     
+    def is_correct_model_loaded(self) -> bool:
+        """Check if the correct model is loaded and ready for use."""
+        return self._model_loaded and self._loaded_model_name == self.model
+    
     def get_model_info(self) -> Dict[str, Any]:
         """Get information about the current model."""
-        model_info = self.AVAILABLE_MODELS[self.model].copy()
-        model_info.update({
-            "loaded": self._model_loaded,
-            "device": self.device,
-            "torch_available": HAS_TORCH
-        })
+        model_info: Dict[str, Any] = self.AVAILABLE_MODELS[self.model].copy()
+        model_info["loaded"] = self._model_loaded
+        model_info["loaded_model_name"] = self._loaded_model_name
+        model_info["current_model"] = self.model
+        model_info["model_match"] = self._loaded_model_name == self.model if self._model_loaded else False
+        model_info["device"] = self.device
+        model_info["torch_available"] = HAS_TORCH
+        model_info["keep_in_memory"] = self.keep_in_memory
+        model_info["memory_usage"] = self._memory_usage.copy()
         return model_info
     
     def unload_model(self):
@@ -332,9 +431,53 @@ class LocalClient(BaseLLMClient):
             self.tokenizer = None
         
         self._model_loaded = False
+        self._loaded_model_name = None  # Clear loaded model tracking
         
         # Clear GPU cache if using CUDA
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
         
         print("Model unloaded from memory")
+    
+    def get_memory_usage(self) -> Dict[str, float]:
+        """Get current memory usage statistics."""
+        self._record_memory_usage()
+        return self._memory_usage.copy()
+    
+    def switch_model(self, new_model: str, preload: bool = False):
+        """Switch to a different model, optionally preloading it."""
+        if new_model not in self.AVAILABLE_MODELS:
+            raise ValueError(f"Model '{new_model}' not available. Available models: {list(self.AVAILABLE_MODELS.keys())}")
+        
+        # Check if we're already using this model
+        if new_model == self.model:
+            print(f"Already using model: {new_model}")
+            if preload and not self._model_loaded:
+                self.preload_model()
+            return
+        
+        # Unload current model if loaded
+        if self._model_loaded:
+            print(f"Unloading current model: {self._loaded_model_name}")
+            self.unload_model()
+        
+        # Switch to new model
+        old_model = self.model
+        self.model = new_model
+        print(f"Switched from {old_model} to {self.model}")
+        
+        # Preload if requested
+        if preload:
+            self.preload_model()
+    
+    def get_available_models_info(self) -> Dict[str, Any]:
+        """Get detailed information about all available models."""
+        models_info: Dict[str, Any] = {}
+        for model_key, model_data in self.AVAILABLE_MODELS.items():
+            models_info[model_key] = model_data.copy()
+            # Add runtime status information
+            models_info[model_key].update({
+                "is_current": model_key == self.model,
+                "is_loaded": model_key == self.model and self._model_loaded
+            })
+        return models_info

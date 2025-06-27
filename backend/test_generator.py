@@ -92,7 +92,7 @@ IMPORTANT: Make sure to properly import the source code being tested. Use the co
 
 {import_instructions}
 
-return the code only, no other text or comments.
+CRITICAL: Return ONLY the test code - no explanations, no markdown formatting, no triple backticks, no comments, no additional text. Just the pure executable test code.
 """
 
 TEST_QUALITY_EVALUATION_PROMPT = """
@@ -148,7 +148,6 @@ For {lang_config['description']}:
         import_instructions=import_instructions
     )
     response = client.generate_tests(prompt)
-    print(response)
     return response
 
 def evaluate_test_quality(code: str, test_code: str, language: str = "python") -> TestQualityResult:
