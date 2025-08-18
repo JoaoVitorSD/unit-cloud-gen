@@ -27,9 +27,9 @@ interface TestQualityResponse {
   execution_error: string;
 }
 
-interface GeneratedCodeProps {
-  generatedCode: string;
-  setGeneratedCode: (code: string) => void;
+interface GeneratedTestsProps {
+  GeneratedTests: string;
+  setGeneratedTests: (code: string) => void;
   language: string;
   provider: string;
   model: string;
@@ -82,9 +82,9 @@ const languageConfigs: { [key: string]: LanguageConfig } = {
   },
 };
 
-const GeneratedCode: React.FC<GeneratedCodeProps> = ({
-  generatedCode,
-  setGeneratedCode,
+const GeneratedTests: React.FC<GeneratedTestsProps> = ({
+  GeneratedTests,
+  setGeneratedTests,
   language,
   provider,
   model,
@@ -104,7 +104,7 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
 
   const handleCopy = async (): Promise<void> => {
     try {
-      await navigator.clipboard.writeText(generatedCode);
+      await navigator.clipboard.writeText(GeneratedTests);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -113,7 +113,7 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
   };
 
   const handleAnalyze = async (): Promise<void> => {
-    if (!generatedCode.trim() || !originalCode.trim()) {
+    if (!GeneratedTests.trim() || !originalCode.trim()) {
       return;
     }
 
@@ -123,7 +123,7 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
     try {
       const requestBody = {
         code: originalCode,
-        test_code: generatedCode,
+        test_code: GeneratedTests,
         language: language,
       };
       console.log("Quality analysis request:", requestBody);
@@ -242,7 +242,7 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
               size="sm"
               onClick={handleAnalyze}
               disabled={
-                isAnalyzing || !generatedCode.trim() || !originalCode.trim()
+                isAnalyzing || !GeneratedTests.trim() || !originalCode.trim()
               }
               className="gap-2 hover:bg-accent transition-colors duration-200"
               title="Evaluate test quality and get coverage metrics"
@@ -261,8 +261,8 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
             </Button>
 
             <div className="text-sm text-muted-foreground ml-2">
-              {generatedCode.split("\n").length} lines • {generatedCode.length}{" "}
-              chars
+              {GeneratedTests.split("\n").length} lines •{" "}
+              {GeneratedTests.length} chars
             </div>
           </div>
         </CardHeader>
@@ -273,8 +273,8 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
               height="100%"
               width="100%"
               language={config.monaco}
-              value={generatedCode}
-              onChange={(value) => setGeneratedCode(value || "")}
+              value={GeneratedTests}
+              onChange={(value) => setGeneratedTests(value || "")}
               theme="vs-dark"
               options={{
                 fontSize: 14,
@@ -306,4 +306,4 @@ const GeneratedCode: React.FC<GeneratedCodeProps> = ({
   );
 };
 
-export default GeneratedCode;
+export default GeneratedTests;

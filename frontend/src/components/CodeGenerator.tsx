@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import MonacoEditor from "@monaco-editor/react";
 import { Code, Copy, Play, Settings, Zap } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import GeneratedCode from "./GeneratedCode";
+import GeneratedTests from "./GeneratedTests";
 
 interface Language {
   id: string;
@@ -239,10 +239,8 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
 
   return (
     <div className="flex h-[90vh]">
-      {/* Original Code Editor */}
       <div className="w-[35vw] bg-background border-r border-border shadow-lg transition-colors duration-300">
-        <Card className="h-full rounded-none border-0 bg-card transition-colors duration-300">
-          {/* Header */}
+        <Card className="h-full rounded-none border-0 bg-card transition-colors duration-300 gap-1 ">
           <CardHeader className="border-b border-border bg-muted/30 p-4 transition-colors duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -372,7 +370,6 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
               </Select>
             </div>
 
-            {/* Current Selection Info */}
             {getCurrentProviderInfo() && getCurrentModelInfo() && (
               <div className="mt-2 text-xs text-muted-foreground">
                 <span className="font-medium">Provider:</span>{" "}
@@ -385,7 +382,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
 
           {/* Code Editor */}
           <CardContent className="flex-1 p-0">
-            <div className="h-[60vh] p-4">
+            <div className="h-[55vh] p-4">
               <MonacoEditor
                 height="100%"
                 width="100%"
@@ -452,9 +449,9 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
         </Card>
       </div>
 
-      <GeneratedCode
-        generatedCode={generatedTests}
-        setGeneratedCode={setGeneratedTests}
+      <GeneratedTests
+        GeneratedTests={generatedTests}
+        setGeneratedTests={setGeneratedTests}
         language={selectedLanguage}
         provider={selectedProvider}
         model={selectedModel}

@@ -112,7 +112,7 @@ Response Formatting → Frontend Rendering → User Interaction
 src/
 ├── components/
 │   ├── CodeGenerator.tsx      # Main code input interface
-│   ├── GeneratedCode.tsx      # Test output display
+│   ├── GeneratedTests.tsx      # Test output display
 │   ├── Header.tsx             # Navigation & branding
 │   ├── Results.tsx            # Analysis results display
 │   └── ui/                    # Reusable UI components

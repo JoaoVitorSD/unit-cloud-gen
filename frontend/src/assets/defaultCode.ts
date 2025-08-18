@@ -86,7 +86,10 @@ export const DEFAULT_USER_CLASSES: Record<string, DefaultCodeEntry> = {
     toString() {
         return \`User(id=\${this.userId}, username='\${this.username}', email='\${this.email}')\`;
     }
-}`,
+
+}
+module.exports = { User };    
+`,
     },
 
     typescript: {
