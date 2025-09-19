@@ -360,5 +360,4 @@ class EventBus {
         this.eventTimeouts.clear();
     }
 }
-
-export default EventBus;
+module.exports = { EventBus };

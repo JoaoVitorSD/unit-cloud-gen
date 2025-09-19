@@ -219,4 +219,4 @@ class DataValidator {
   }
 }
 
-export default DataValidator;
+module.exports = { DataValidator };

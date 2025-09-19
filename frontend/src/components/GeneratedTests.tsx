@@ -209,11 +209,7 @@ const GeneratedTests: React.FC<GeneratedTestsProps> = ({
                   {testExecutionStatus.total} total)
                 </span>
               </div>
-              {testExecutionStatus.error && (
-                <div className="mt-1 text-xs text-red-600 dark:text-red-400">
-                  Error: {testExecutionStatus.error}
-                </div>
-              )}
+       
             </div>
           )}
 

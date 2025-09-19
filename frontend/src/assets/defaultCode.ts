@@ -4,531 +4,275 @@ export interface DefaultCodeEntry {
     description: string;
 }
 
-export const DEFAULT_USER_CLASSES: Record<string, DefaultCodeEntry> = {
-    python: {
-        language: "python",
-        description: "Python User class with basic properties and methods",
-        code: `class User:
-    def __init__(self, user_id: int, username: str, email: str, first_name: str = "", last_name: str = ""):
-        self.user_id = user_id
-        self.username = username
-        self.email = email
-        self.first_name = first_name
-        self.last_name = last_name
-        self.is_active = True
-        self.created_at = None
-    
-    def get_full_name(self) -> str:
-        """Return the full name of the user."""
-        return f"{self.first_name} {self.last_name}".strip()
-    
-    def deactivate(self) -> None:
-        """Deactivate the user account."""
-        self.is_active = False
-    
-    def update_email(self, new_email: str) -> bool:
-        """Update user email with basic validation."""
-        if "@" in new_email and "." in new_email:
-            self.email = new_email
-            return True
-        return False
-    
-    def __str__(self) -> str:
-        return f"User(id={self.user_id}, username='{self.username}', email='{self.email}')"
-    
-    def __repr__(self) -> str:
-        return self.__str__()`,
-    },
-
-    javascript: {
+export const LEETCODE_PROBLEMS: Record<string, DefaultCodeEntry> = {
+    easy_two_sum: {
         language: "javascript",
-        description: "JavaScript User class with ES6+ syntax",
-        code: `class User {
-    constructor(userId, username, email, firstName = "", lastName = "") {
-        this.userId = userId;
-        this.username = username;
-        this.email = email;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.isActive = true;
-        this.createdAt = new Date();
-    }
+        description: "Two Sum - Easy: Find indices of two numbers that add up to target",
+        code: `function twoSum(nums, target) {
+    const map = new Map();
     
-    getFullName() {
-        return \`\${this.firstName} \${this.lastName}\`.trim();
-    }
-    
-    deactivate() {
-        this.isActive = false;
-    }
-    
-    updateEmail(newEmail) {
-        const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
-        if (emailRegex.test(newEmail)) {
-            this.email = newEmail;
-            return true;
+    for (let i = 0; i < nums.length; i++) {
+        const complement = target - nums[i];
+        
+        if (map.has(complement)) {
+            return [map.get(complement), i];
         }
-        return false;
+        
+        map.set(nums[i], i);
     }
     
-    toJSON() {
-        return {
-            userId: this.userId,
-            username: this.username,
-            email: this.email,
-            firstName: this.firstName,
-            lastName: this.lastName,
-            isActive: this.isActive,
-            createdAt: this.createdAt
-        };
-    }
-    
-    toString() {
-        return \`User(id=\${this.userId}, username='\${this.username}', email='\${this.email}')\`;
-    }
-
-}
-module.exports = { User };    
-`,
-    },
-
-    typescript: {
-        language: "typescript",
-        description: "TypeScript User class with full type definitions",
-        code: `interface UserData {
-    userId: number;
-    username: string;
-    email: string;
-    firstName?: string;
-    lastName?: string;
+    return [];
 }
 
-class User {
-    public readonly userId: number;
-    public username: string;
-    public email: string;
-    public firstName: string;
-    public lastName: string;
-    public isActive: boolean;
-    public readonly createdAt: Date;
-    
-    constructor(userData: UserData) {
-        this.userId = userData.userId;
-        this.username = userData.username;
-        this.email = userData.email;
-        this.firstName = userData.firstName || "";
-        this.lastName = userData.lastName || "";
-        this.isActive = true;
-        this.createdAt = new Date();
-    }
-    
-    getFullName(): string {
-        return \`\${this.firstName} \${this.lastName}\`.trim();
-    }
-    
-    deactivate(): void {
-        this.isActive = false;
-    }
-    
-    updateEmail(newEmail: string): boolean {
-        const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
-        if (emailRegex.test(newEmail)) {
-            this.email = newEmail;
-            return true;
-        }
-        return false;
-    }
-    
-    toJSON(): UserData & { isActive: boolean; createdAt: Date } {
-        return {
-            userId: this.userId,
-            username: this.username,
-            email: this.email,
-            firstName: this.firstName,
-            lastName: this.lastName,
-            isActive: this.isActive,
-            createdAt: this.createdAt
-        };
-    }
-    
-    toString(): string {
-        return \`User(id=\${this.userId}, username='\${this.username}', email='\${this.email}')\`;
-    }
-}`,
+module.exports = { twoSum };`
     },
 
-    java: {
-        language: "java",
-        description: "Java User class with proper encapsulation and JavaDoc",
-        code: `import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.regex.Pattern;
-
-/**
- * Represents a User entity with basic user information and operations.
- */
-public class User {
-    private static final Pattern EMAIL_PATTERN = 
-        Pattern.compile("^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\\\.[A-Za-z]{2,})$");
+    easy_palindrome: {
+        language: "javascript",
+        description: "Valid Palindrome - Easy: Check if string is a valid palindrome",
+        code: `function isPalindrome(s) {
+    const cleaned = s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    let left = 0;
+    let right = cleaned.length - 1;
     
-    private final Long userId;
-    private String username;
-    private String email;
-    private String firstName;
-    private String lastName;
-    private boolean isActive;
-    private final LocalDateTime createdAt;
-    
-    /**
-     * Constructs a new User with the specified details.
-     */
-    public User(Long userId, String username, String email, String firstName, String lastName) {
-        this.userId = userId;
-        this.username = username;
-        this.email = email;
-        this.firstName = firstName != null ? firstName : "";
-        this.lastName = lastName != null ? lastName : "";
-        this.isActive = true;
-        this.createdAt = LocalDateTime.now();
-    }
-    
-    public User(Long userId, String username, String email) {
-        this(userId, username, email, "", "");
-    }
-    
-    // Getters
-    public Long getUserId() { return userId; }
-    public String getUsername() { return username; }
-    public String getEmail() { return email; }
-    public String getFirstName() { return firstName; }
-    public String getLastName() { return lastName; }
-    public boolean isActive() { return isActive; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    
-    // Setters
-    public void setUsername(String username) { this.username = username; }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
-    public void setLastName(String lastName) { this.lastName = lastName; }
-    
-    /**
-     * Returns the full name of the user.
-     */
-    public String getFullName() {
-        return (firstName + " " + lastName).trim();
-    }
-    
-    /**
-     * Deactivates the user account.
-     */
-    public void deactivate() {
-        this.isActive = false;
-    }
-    
-    /**
-     * Updates the user's email address with validation.
-     */
-    public boolean updateEmail(String newEmail) {
-        if (EMAIL_PATTERN.matcher(newEmail).matches()) {
-            this.email = newEmail;
-            return true;
-        }
-        return false;
-    }
-    
-    @Override
-    public String toString() {
-        return String.format("User(id=%d, username='%s', email='%s')", 
-                           userId, username, email);
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        User user = (User) obj;
-        return Objects.equals(userId, user.userId);
-    }
-    
-    @Override
-    public int hashCode() {
-        return Objects.hash(userId);
-    }
-}`,
-    },
-
-    csharp: {
-        language: "csharp",
-        description: "C# User class with properties and data annotations",
-        code: `using System;
-using System.ComponentModel.DataAnnotations;
-using System.Text.RegularExpressions;
-
-/// <summary>
-/// Represents a User entity with basic user information and operations.
-/// </summary>
-public class User
-{
-    private static readonly Regex EmailRegex = 
-        new Regex(@"^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})$", RegexOptions.Compiled);
-    
-    [Key]
-    public long UserId { get; }
-    
-    [Required]
-    [StringLength(50)]
-    public string Username { get; set; }
-    
-    [Required]
-    [EmailAddress]
-    public string Email { get; private set; }
-    
-    [StringLength(100)]
-    public string FirstName { get; set; }
-    
-    [StringLength(100)]
-    public string LastName { get; set; }
-    
-    public bool IsActive { get; private set; }
-    
-    public DateTime CreatedAt { get; }
-    
-    /// <summary>
-    /// Initializes a new instance of the User class.
-    /// </summary>
-    public User(long userId, string username, string email, string firstName = "", string lastName = "")
-    {
-        UserId = userId;
-        Username = username ?? throw new ArgumentNullException(nameof(username));
-        Email = email ?? throw new ArgumentNullException(nameof(email));
-        FirstName = firstName ?? "";
-        LastName = lastName ?? "";
-        IsActive = true;
-        CreatedAt = DateTime.UtcNow;
-    }
-    
-    /// <summary>
-    /// Gets the full name of the user.
-    /// </summary>
-    public string GetFullName()
-    {
-        return $"{FirstName} {LastName}".Trim();
-    }
-    
-    /// <summary>
-    /// Deactivates the user account.
-    /// </summary>
-    public void Deactivate()
-    {
-        IsActive = false;
-    }
-    
-    /// <summary>
-    /// Updates the user's email address with validation.
-    /// </summary>
-    public bool UpdateEmail(string newEmail)
-    {
-        if (string.IsNullOrWhiteSpace(newEmail))
+    while (left < right) {
+        if (cleaned[left] !== cleaned[right]) {
             return false;
-            
-        if (EmailRegex.IsMatch(newEmail))
-        {
-            Email = newEmail;
-            return true;
         }
-        return false;
+        left++;
+        right--;
     }
     
-    public override string ToString()
-    {
-        return $"User(id={UserId}, username='{Username}', email='{Email}')";
-    }
-    
-    public override bool Equals(object obj)
-    {
-        return obj is User user && UserId == user.UserId;
-    }
-    
-    public override int GetHashCode()
-    {
-        return UserId.GetHashCode();
-    }
-}`,
+    return true;
+}
+
+module.exports = { isPalindrome };`
     },
 
-    go: {
-        language: "go",
-        description: "Go User struct with methods and JSON tags",
-        code: `package main
-
-import (
-    "fmt"
-    "regexp"
-    "strings"
-    "time"
-)
-
-// User represents a user entity with basic information and operations
-type User struct {
-    UserID    int64     \`json:"user_id"\`
-    Username  string    \`json:"username"\`
-    Email     string    \`json:"email"\`
-    FirstName string    \`json:"first_name"\`
-    LastName  string    \`json:"last_name"\`
-    IsActive  bool      \`json:"is_active"\`
-    CreatedAt time.Time \`json:"created_at"\`
-}
-
-var emailRegex = regexp.MustCompile(\`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$\`)
-
-// NewUser creates a new User instance
-func NewUser(userID int64, username, email, firstName, lastName string) *User {
-    return &User{
-        UserID:    userID,
-        Username:  username,
-        Email:     email,
-        FirstName: firstName,
-        LastName:  lastName,
-        IsActive:  true,
-        CreatedAt: time.Now(),
+    easy_reverse_integer: {
+        language: "javascript",
+        description: "Reverse Integer - Easy: Reverse digits of an integer",
+        code: `function reverse(x) {
+    const sign = Math.sign(x);
+    const reversed = parseInt(Math.abs(x).toString().split('').reverse().join(''));
+    
+    if (reversed > Math.pow(2, 31) - 1) {
+        return 0;
     }
+    
+    return sign * reversed;
 }
 
-// GetFullName returns the full name of the user
-func (u *User) GetFullName() string {
-    return strings.TrimSpace(fmt.Sprintf("%s %s", u.FirstName, u.LastName))
-}
-
-// Deactivate deactivates the user account
-func (u *User) Deactivate() {
-    u.IsActive = false
-}
-
-// UpdateEmail updates the user's email address with validation
-func (u *User) UpdateEmail(newEmail string) bool {
-    if emailRegex.MatchString(newEmail) {
-        u.Email = newEmail
-        return true
-    }
-    return false
-}
-
-// String returns a string representation of the user
-func (u *User) String() string {
-    return fmt.Sprintf("User(id=%d, username='%s', email='%s')", u.UserID, u.Username, u.Email)
-}`,
+module.exports = { reverse };`
     },
 
-    rust: {
-        language: "rust",
-        description: "Rust User struct with proper ownership and error handling",
-        code: `use chrono::{DateTime, Utc};
-use regex::Regex;
-use std::fmt;
-
-#[derive(Debug, Clone)]
-pub struct User {
-    user_id: u64,
-    username: String,
-    email: String,
-    first_name: String,
-    last_name: String,
-    is_active: bool,
-    created_at: DateTime<Utc>,
+    medium_longest_substring: {
+        language: "javascript",
+        description: "Longest Substring Without Repeating Characters - Medium",
+        code: `function lengthOfLongestSubstring(s) {
+    const seen = new Set();
+    let left = 0;
+    let maxLength = 0;
+    
+    for (let right = 0; right < s.length; right++) {
+        while (seen.has(s[right])) {
+            seen.delete(s[left]);
+            left++;
+        }
+        
+        seen.add(s[right]);
+        maxLength = Math.max(maxLength, right - left + 1);
+    }
+    
+    return maxLength;
 }
 
-impl User {
-    /// Creates a new User instance
-    pub fn new(
-        user_id: u64,
-        username: String,
-        email: String,
-        first_name: Option<String>,
-        last_name: Option<String>,
-    ) -> Self {
-        Self {
-            user_id,
-            username,
-            email,
-            first_name: first_name.unwrap_or_default(),
-            last_name: last_name.unwrap_or_default(),
-            is_active: true,
-            created_at: Utc::now(),
+module.exports = { lengthOfLongestSubstring };`
+    },
+
+    medium_group_anagrams: {
+        language: "javascript",
+        description: "Group Anagrams - Medium: Group strings that are anagrams",
+        code: `function groupAnagrams(strs) {
+    const map = new Map();
+    
+    for (const str of strs) {
+        const sorted = str.split('').sort().join('');
+        
+        if (!map.has(sorted)) {
+            map.set(sorted, []);
+        }
+        
+        map.get(sorted).push(str);
+    }
+    
+    return Array.from(map.values());
+}
+
+module.exports = { groupAnagrams };`
+    },
+
+    medium_three_sum: {
+        language: "javascript",
+        description: "3Sum - Medium: Find all unique triplets that sum to zero",
+        code: `function threeSum(nums) {
+    nums.sort((a, b) => a - b);
+    const result = [];
+    
+    for (let i = 0; i < nums.length - 2; i++) {
+        if (i > 0 && nums[i] === nums[i - 1]) continue;
+        
+        let left = i + 1;
+        let right = nums.length - 1;
+        
+        while (left < right) {
+            const sum = nums[i] + nums[left] + nums[right];
+            
+            if (sum === 0) {
+                result.push([nums[i], nums[left], nums[right]]);
+                
+                while (left < right && nums[left] === nums[left + 1]) left++;
+                while (left < right && nums[right] === nums[right - 1]) right--;
+                
+                left++;
+                right--;
+            } else if (sum < 0) {
+                left++;
+            } else {
+                right--;
+            }
         }
     }
     
-    // Getters
-    pub fn user_id(&self) -> u64 { self.user_id }
-    pub fn username(&self) -> &str { &self.username }
-    pub fn email(&self) -> &str { &self.email }
-    pub fn first_name(&self) -> &str { &self.first_name }
-    pub fn last_name(&self) -> &str { &self.last_name }
-    pub fn is_active(&self) -> bool { self.is_active }
-    pub fn created_at(&self) -> DateTime<Utc> { self.created_at }
-    
-    /// Returns the full name of the user
-    pub fn get_full_name(&self) -> String {
-        format!("{} {}", self.first_name, self.last_name).trim().to_string()
+    return result;
+}
+
+module.exports = { threeSum };`
+    },
+
+    hard_median_sorted_arrays: {
+        language: "javascript",
+        description: "Median of Two Sorted Arrays - Hard: Find median efficiently",
+        code: `function findMedianSortedArrays(nums1, nums2) {
+    if (nums1.length > nums2.length) {
+        return findMedianSortedArrays(nums2, nums1);
     }
     
-    /// Deactivates the user account
-    pub fn deactivate(&mut self) {
-        self.is_active = false;
-    }
+    const m = nums1.length;
+    const n = nums2.length;
+    let left = 0;
+    let right = m;
     
-    /// Updates the user's email address with validation
-    pub fn update_email(&mut self, new_email: String) -> Result<(), &'static str> {
-        let email_regex = Regex::new(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
-            .unwrap();
-            
-        if email_regex.is_match(&new_email) {
-            self.email = new_email;
-            Ok(())
+    while (left <= right) {
+        const partitionX = Math.floor((left + right) / 2);
+        const partitionY = Math.floor((m + n + 1) / 2) - partitionX;
+        
+        const maxLeftX = partitionX === 0 ? -Infinity : nums1[partitionX - 1];
+        const minRightX = partitionX === m ? Infinity : nums1[partitionX];
+        
+        const maxLeftY = partitionY === 0 ? -Infinity : nums2[partitionY - 1];
+        const minRightY = partitionY === n ? Infinity : nums2[partitionY];
+        
+        if (maxLeftX <= minRightY && maxLeftY <= minRightX) {
+            if ((m + n) % 2 === 0) {
+                return (Math.max(maxLeftX, maxLeftY) + Math.min(minRightX, minRightY)) / 2;
+            } else {
+                return Math.max(maxLeftX, maxLeftY);
+            }
+        } else if (maxLeftX > minRightY) {
+            right = partitionX - 1;
         } else {
-            Err("Invalid email format")
+            left = partitionX + 1;
+        }
+    }
+}
+
+module.exports = { findMedianSortedArrays };`
+    },
+
+    hard_trapping_rain_water: {
+        language: "javascript",
+        description: "Trapping Rain Water - Hard: Calculate trapped rainwater",
+        code: `function trap(height) {
+    if (!height || height.length < 3) return 0;
+    
+    let left = 0;
+    let right = height.length - 1;
+    let leftMax = 0;
+    let rightMax = 0;
+    let water = 0;
+    
+    while (left < right) {
+        if (height[left] < height[right]) {
+            if (height[left] >= leftMax) {
+                leftMax = height[left];
+            } else {
+                water += leftMax - height[left];
+            }
+            left++;
+        } else {
+            if (height[right] >= rightMax) {
+                rightMax = height[right];
+            } else {
+                water += rightMax - height[right];
+            }
+            right--;
         }
     }
     
-    /// Updates the username
-    pub fn set_username(&mut self, username: String) {
-        self.username = username;
-    }
-    
-    /// Updates the first name
-    pub fn set_first_name(&mut self, first_name: String) {
-        self.first_name = first_name;
-    }
-    
-    /// Updates the last name
-    pub fn set_last_name(&mut self, last_name: String) {
-        self.last_name = last_name;
-    }
+    return water;
 }
 
-impl fmt::Display for User {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "User(id={}, username='{}', email='{}')", 
-               self.user_id, self.username, self.email)
+module.exports = { trap };`
+    },
+
+    hard_longest_valid_parentheses: {
+        language: "javascript",
+        description: "Longest Valid Parentheses - Hard: Find length of longest valid parentheses substring",
+        code: `function longestValidParentheses(s) {
+    const stack = [-1];
+    let maxLength = 0;
+    
+    for (let i = 0; i < s.length; i++) {
+        if (s[i] === '(') {
+            stack.push(i);
+        } else {
+            stack.pop();
+            
+            if (stack.length === 0) {
+                stack.push(i);
+            } else {
+                maxLength = Math.max(maxLength, i - stack[stack.length - 1]);
+            }
+        }
     }
+    
+    return maxLength;
 }
 
-impl PartialEq for User {
-    fn eq(&self, other: &Self) -> bool {
-        self.user_id == other.user_id
-    }
-}`,
+module.exports = { longestValidParentheses };`
     }
 };
 
-export const getDefaultCodeForLanguage = (language: string): string => {
-    const entry = DEFAULT_USER_CLASSES[language.toLowerCase()];
-    return entry ? entry.code : DEFAULT_USER_CLASSES.python.code;
+export const getDefaultCodeForLanguage = (problemKey: string): string => {
+    const entry = LEETCODE_PROBLEMS[problemKey];
+    return entry ? entry.code : LEETCODE_PROBLEMS.easy_two_sum.code;
 };
 
-export const getSupportedLanguages = (): string[] => {
-    return Object.keys(DEFAULT_USER_CLASSES);
+export const getSupportedProblems = (): string[] => {
+    return Object.keys(LEETCODE_PROBLEMS);
 };
 
-export const getLanguageDescription = (language: string): string => {
-    const entry = DEFAULT_USER_CLASSES[language.toLowerCase()];
-    return entry ? entry.description : "Default Python User class";
-}; 
+export const getProblemDescription = (problemKey: string): string => {
+    const entry = LEETCODE_PROBLEMS[problemKey];
+    return entry ? entry.description : "Two Sum - Easy";
+};
+
+export const getProblemsByDifficulty = () => {
+    const problems = Object.entries(LEETCODE_PROBLEMS);
+    return {
+        easy: problems.filter(([key]) => key.startsWith('easy_')),
+        medium: problems.filter(([key]) => key.startsWith('medium_')),
+        hard: problems.filter(([key]) => key.startsWith('hard_'))
+    };
+};

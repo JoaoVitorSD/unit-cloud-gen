@@ -1,4 +1,7 @@
-import { getDefaultCodeForLanguage } from "@/assets/defaultCode";
+import {
+  getDefaultCodeForLanguage,
+  getProblemsByDifficulty,
+} from "@/assets/defaultCode";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -15,10 +18,10 @@ import { Code, Copy, Play, Settings, Zap } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import GeneratedTests from "./GeneratedTests";
 
-interface Language {
-  id: string;
+interface Problem {
+  key: string;
   name: string;
-  monaco: string;
+  difficulty: string;
 }
 
 interface ColorMap {
@@ -72,15 +75,22 @@ interface ModelsResponse {
   };
 }
 
-const languages: Language[] = [
-  { id: "javascript", name: "JavaScript", monaco: "javascript" },
-  { id: "python", name: "Python", monaco: "python" },
-  { id: "java", name: "Java", monaco: "java" },
-  { id: "go", name: "Go", monaco: "go" },
-  { id: "typescript", name: "TypeScript", monaco: "typescript" },
-  { id: "rust", name: "Rust", monaco: "rust" },
-  { id: "csharp", name: "C#", monaco: "csharp" },
-];
+const getProblems = (): Problem[] => {
+  const problemsByDifficulty = getProblemsByDifficulty();
+  const allProblems: Problem[] = [];
+
+  Object.entries(problemsByDifficulty).forEach(([difficulty, problems]) => {
+    problems.forEach(([key, entry]) => {
+      allProblems.push({
+        key,
+        name: entry.description,
+        difficulty: difficulty.charAt(0).toUpperCase() + difficulty.slice(1),
+      });
+    });
+  });
+
+  return allProblems;
+};
 
 interface CodeGeneratorProps {
   onTestResults?: (results: GenerateTestsResponse) => void;
@@ -92,10 +102,10 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
   onQualityResults,
 }) => {
   const [code, setCode] = useState<string>(
-    getDefaultCodeForLanguage("javascript")
+    getDefaultCodeForLanguage("easy_two_sum")
   );
-  const [selectedLanguage, setSelectedLanguage] =
-    useState<string>("javascript");
+  const [selectedProblem, setSelectedProblem] =
+    useState<string>("easy_two_sum");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [selectedProvider, setSelectedProvider] = useState<string>("");
   const [selectedModel, setSelectedModel] = useState<string>("");
@@ -117,15 +127,14 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
         const modelsData: ModelsResponse = await modelsResponse.json();
         setModelsByProvider(modelsData.models_by_provider);
 
-        // Set default provider and model
-        const providerKeys = Object.keys(modelsData.models_by_provider);
-        if (providerKeys.length > 0) {
-          const defaultProvider = providerKeys[0];
-          setSelectedProvider(defaultProvider);
-
-          const providerModels = modelsData.models_by_provider[defaultProvider];
-          if (providerModels && providerModels.models.length > 0) {
-            setSelectedModel(providerModels.models[0].id);
+        // Set default to OpenAI only
+        if (modelsData.models_by_provider.openai) {
+          setSelectedProvider("openai");
+          const openaiModels = modelsData.models_by_provider.openai.models;
+          if (openaiModels.length > 0) {
+            const gpt4Model =
+              openaiModels.find((m) => m.id === "gpt-4") || openaiModels[0];
+            setSelectedModel(gpt4Model.id);
           }
         }
       } catch (err) {
@@ -137,13 +146,13 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
     fetchProvidersAndModels();
   }, []);
 
-  // Update code when language changes
+  // Update code when problem changes
   useEffect(() => {
-    setCode(getDefaultCodeForLanguage(selectedLanguage));
-  }, [selectedLanguage]);
+    setCode(getDefaultCodeForLanguage(selectedProblem));
+  }, [selectedProblem]);
 
-  const handleLanguageChange = (value: string): void => {
-    setSelectedLanguage(value);
+  const handleProblemChange = (value: string): void => {
+    setSelectedProblem(value);
   };
 
   const handleProviderChange = (value: string): void => {
@@ -185,7 +194,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
           code: code,
           provider: selectedProvider,
           model: selectedModel,
-          language: selectedLanguage,
+          language: "javascript",
         }),
       });
 
@@ -215,27 +224,25 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
     }
   };
 
-  const getLanguageBadgeColor = (lang: string): string => {
+  const getDifficultyBadgeColor = (difficulty: string): string => {
     const colors: ColorMap = {
-      javascript:
+      Easy: "bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/30",
+      Medium:
         "bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:hover:bg-yellow-900/30",
-      python:
-        "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30",
-      java: "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30",
-      go: "bg-cyan-100 text-cyan-800 hover:bg-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-400 dark:hover:bg-cyan-900/30",
-      typescript:
-        "bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/30",
-      rust: "bg-orange-100 text-orange-800 hover:bg-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/30",
-      csharp:
-        "bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/30",
+      Hard: "bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/30",
     };
     return (
-      colors[lang] || "bg-accent text-accent-foreground hover:bg-accent/80"
+      colors[difficulty] ||
+      "bg-accent text-accent-foreground hover:bg-accent/80"
     );
   };
 
-  const monacoLang: string =
-    languages.find((l) => l.id === selectedLanguage)?.monaco || "javascript";
+  const getCurrentProblem = (): Problem | null => {
+    const problems = getProblems();
+    return problems.find((p) => p.key === selectedProblem) || null;
+  };
+
+  const monacoLang = "javascript";
 
   return (
     <div className="flex h-[90vh]">
@@ -258,28 +265,37 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
               </div>
               <Badge
                 variant="secondary"
-                className={`${getLanguageBadgeColor(
-                  selectedLanguage
+                className={`${getDifficultyBadgeColor(
+                  getCurrentProblem()?.difficulty || "Easy"
                 )} transition-colors duration-300 cursor-pointer`}
               >
-                {languages.find((lang) => lang.id === selectedLanguage)?.name}
+                JavaScript - {getCurrentProblem()?.difficulty || "Easy"}
               </Badge>
             </div>
 
             <div className="flex items-center flex-wrap gap-2 mt-3">
               <Select
-                value={selectedLanguage}
-                onValueChange={handleLanguageChange}
+                value={selectedProblem}
+                onValueChange={handleProblemChange}
               >
-                <SelectTrigger className="w-[140px] bg-background border-input transition-colors duration-300">
-                  <SelectValue placeholder="Language" />
+                <SelectTrigger className="w-[300px] bg-background border-input transition-colors duration-300">
+                  <SelectValue placeholder="Select Problem" />
                 </SelectTrigger>
                 <SelectContent>
-                  {languages.map((lang: Language) => (
-                    <SelectItem key={lang.id} value={lang.id}>
-                      {lang.name}
-                    </SelectItem>
-                  ))}
+                  {Object.entries(getProblemsByDifficulty()).map(
+                    ([difficulty, problems]) => (
+                      <div key={difficulty}>
+                        <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
+                          {difficulty}
+                        </div>
+                        {problems.map(([key, entry]) => (
+                          <SelectItem key={key} value={key}>
+                            {entry.description}
+                          </SelectItem>
+                        ))}
+                      </div>
+                    )
+                  )}
                 </SelectContent>
               </Select>
 
@@ -321,8 +337,9 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
                   )}
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(modelsByProvider).map(
-                    ([providerId, providerInfo]) => (
+                  {Object.entries(modelsByProvider)
+                    .filter(([providerId]) => providerId === "openai")
+                    .map(([providerId, providerInfo]) => (
                       <SelectItem key={providerId} value={providerId}>
                         <div className="flex flex-col">
                           <span className="font-medium">
@@ -333,8 +350,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
                           </span>
                         </div>
                       </SelectItem>
-                    )
-                  )}
+                    ))}
                 </SelectContent>
               </Select>
 
@@ -354,8 +370,9 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
                   )}
                 </SelectTrigger>
                 <SelectContent>
-                  {(modelsByProvider[selectedProvider]?.models || []).map(
-                    (model: ModelInfo) => (
+                  {(modelsByProvider[selectedProvider]?.models || [])
+                    .filter((model: ModelInfo) => model.id.includes("gpt"))
+                    .map((model: ModelInfo) => (
                       <SelectItem key={model.id} value={model.id}>
                         <div className="flex flex-col">
                           <span className="font-medium">{model.name}</span>
@@ -364,8 +381,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
                           </span>
                         </div>
                       </SelectItem>
-                    )
-                  )}
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -452,7 +468,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
       <GeneratedTests
         GeneratedTests={generatedTests}
         setGeneratedTests={setGeneratedTests}
-        language={selectedLanguage}
+        language="javascript"
         provider={selectedProvider}
         model={selectedModel}
         originalCode={code}

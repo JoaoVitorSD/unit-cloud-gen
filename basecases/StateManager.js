@@ -303,4 +303,4 @@ class StateManager {
   }
 }
 
-export default StateManager;
+module.exports = { StateManager };

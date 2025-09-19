@@ -20,16 +20,19 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
+
 class CodeRequest(BaseModel):
     code: str
     provider: str = "openai"
     model: str = "gpt-4"
-    language: str = "python"
+    language: str = "javascript"
+
 
 class TestQualityRequest(BaseModel):
     code: str
     test_code: str
-    language: str = "python"
+    language: str = "javascript"
+
 
 @app.post("/generate-tests")
 def generate_tests(req: CodeRequest):
@@ -40,11 +43,12 @@ def generate_tests(req: CodeRequest):
             "tests": result.tests,
             "tokens_used": result.tokens_used,
             "estimated_cost": result.estimated_cost,
-            "time_taken": result.time_taken
+            "time_taken": result.time_taken,
         }
     except Exception as e:
         print(f"Error generating tests: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/evaluate-test-quality")
 def evaluate_quality(req: TestQualityRequest):
@@ -72,72 +76,46 @@ def evaluate_quality(req: TestQualityRequest):
             "execution_time": result.execution_time,
             "execution_error": result.execution_error,
             # Individual test results
-            "test_details": result.test_details
+            "test_details": result.test_details,
         }
     except Exception as e:
         print(f"Error evaluating test quality: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
 @app.get("/providers")
 def get_providers():
-    return {"providers": list(LLM_CLIENTS.keys())}
+    return {"providers": ["openai"]}
+
 
 @app.get("/models")
 def get_models():
-    """Get available models organized by provider."""
-    from llm_client.local_client import LocalClient
+    """Get available OpenAI models only."""
     from llm_client.openai_client import OpenAIClient
 
-    # Get models from each client
+    # Get models from OpenAI client only
     openai_models = OpenAIClient.get_available_models()
-    local_models = LocalClient.get_available_models()
-    
-    # Convert to the expected format
+
+    # Convert to the expected format - only OpenAI
     models_by_provider = {
         "openai": {
             "name": "OpenAI",
-            "description": "Cloud-based AI models",
+            "description": "ChatGPT and GPT models for JavaScript testing",
             "models": [
                 {
                     "id": model_id,
                     "name": model_info["name"],
-                    "description": model_info["description"]
+                    "description": model_info["description"],
                 }
                 for model_id, model_info in openai_models.items()
-            ]
-        },
-        "local": {
-            "name": "Local (Meta)",
-            "description": "Open source models via Ollama",
-            "models": [
-                {
-                    "id": model_id,
-                    "name": model_info["name"],
-                    "description": model_info["description"]
-                }
-                for model_id, model_info in local_models.items()
-            ]
+                if "gpt" in model_id.lower()
+            ],
         }
     }
-    
-    # Add Anthropic if available (you can add AnthropicClient later)
-    try:
-        # This would be added when AnthropicClient is implemented
-        models_by_provider["anthropic"] = {
-            "name": "Anthropic",
-            "description": "Claude AI models",
-            "models": [
-                {"id": "claude-3-sonnet", "name": "Claude 3 Sonnet", "description": "Balanced performance"},
-                {"id": "claude-3-haiku", "name": "Claude 3 Haiku", "description": "Fast and efficient"}
-            ]
-        }
-    except ImportError:
-        pass
-    
+
     return {"models_by_provider": models_by_provider}
+
 
 @app.get("/")
 def read_root():
     return {"message": "Hello, World!"}
-
-

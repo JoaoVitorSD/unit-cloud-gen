@@ -561,4 +561,4 @@ class QueueManager {
   }
 }
 
-export default QueueManager;
+module.exports = { QueueManager };

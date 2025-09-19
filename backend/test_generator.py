@@ -4,51 +4,14 @@ from typing import Any, Dict, List
 from llm_client import TestGenerationResult, get_llm_client
 from test_analyzer import CoverageResult, get_test_analyzer
 
-# Language-specific import configurations
-LANGUAGE_IMPORT_CONFIGS = {
-    "javascript": {
-        "named_imports": "import {{ ClassName }} from './source.js'",
-        "default_imports": "import ClassName from './source.js'",
-        "source_file": "source.js",
-        "description": "JavaScript/TypeScript"
-    },
-    "typescript": {
-        "named_imports": "import {{ ClassName }} from './source.ts'",
-        "default_imports": "import ClassName from './source.ts'",
-        "source_file": "source.ts",
-        "description": "TypeScript"
-    },
-    "python": {
-        "named_imports": "from source import ClassName, function_name",
-        "default_imports": "from source import *",
-        "source_file": "source.py",
-        "description": "Python"
-    },
-    "java": {
-        "named_imports": "import source.ClassName;",
-        "default_imports": "import ClassName;",
-        "source_file": "source.java",
-        "description": "Java"
-    },
-    "go": {
-        "named_imports": 'import "./source"',
-        "default_imports": 'import ("./source" "source")',
-        "source_file": "source.go",
-        "description": "Go"
-    },
-    "rust": {
-        "named_imports": "use crate::source::ClassName;",
-        "default_imports": "use crate::source;",
-        "source_file": "source.rs",
-        "description": "Rust"
-    },
-    "csharp": {
-        "named_imports": "using SourceNamespace.ClassName;",
-        "default_imports": "using SourceNamespace;",
-        "source_file": "source.cs",
-        "description": "C#"
-    }
+# JavaScript-only import configuration
+JAVASCRIPT_IMPORT_CONFIG = {
+    "named_imports": "const {{ functionName }} = require('./source.js');",
+    "default_imports": "const source = require('./source.js');",
+    "source_file": "source.js",
+    "description": "JavaScript",
 }
+
 
 @dataclass
 class TestQualityResult:
@@ -74,11 +37,10 @@ class TestQualityResult:
     # Individual test results
     test_details: List[Dict[str, Any]] = field(default_factory=list)
 
-UNIT_TEST_PROMPT = """
-You are a {language} expert. Generate complete unit tests for the following {language} code:
-Include all necessary import statements and use appropriate testing frameworks and mock objects where needed.
 
-Programming Language: {language}
+UNIT_TEST_PROMPT = """
+You are a JavaScript testing expert. Generate complete unit tests for the following JavaScript code using Jest framework:
+
 Code:
 {code}
 
@@ -86,19 +48,16 @@ Please generate comprehensive unit tests that cover:
 - Normal/happy path scenarios
 - Edge cases and error conditions
 - Mock external dependencies if any
-- Use appropriate assertions for {language}
+- Use Jest assertions and testing patterns
 
-IMPORTANT: Make sure to properly import the source code being tested. Use the correct import syntax for {language}:
-
+IMPORTANT: Make sure to properly import the source code being tested using:
 {import_instructions}
 
-CRITICAL: Return ONLY the test code - no explanations, no markdown formatting, no triple backticks, no comments, no additional text. Just the pure executable test code.
+CRITICAL: Return ONLY the test code - no explanations, no markdown formatting, no triple backticks, no additional text. Just the pure executable Jest test code.
 """
 
 TEST_QUALITY_EVALUATION_PROMPT = """
-You are a {language} testing expert. Evaluate the quality of the following unit tests for the given code.
-
-Programming Language: {language}
+You are a JavaScript testing expert. Evaluate the quality of the following Jest unit tests for the given JavaScript code.
 
 Original Code:
 {code}
@@ -115,7 +74,7 @@ Please evaluate the test quality and provide:
 Consider the following criteria:
 - Test coverage (happy path, edge cases, error conditions)
 - Code quality and readability
-- Proper use of testing frameworks and assertions
+- Proper use of Jest framework and assertions
 - Mock usage for external dependencies
 Respond in the following JSON format only:
 {{
@@ -126,61 +85,56 @@ Respond in the following JSON format only:
 }}
 """
 
-def generate_unit_tests(code: str, llm_name="openai", model="gpt-4", language="python") -> TestGenerationResult:
+
+def generate_unit_tests(
+    code: str, llm_name="openai", model="gpt-4", language="javascript"
+) -> TestGenerationResult:
     client = get_llm_client(llm_name)
     if hasattr(client, "model"):
         client.model = model
-    
-    # Get language-specific import configuration
-    lang_config = LANGUAGE_IMPORT_CONFIGS.get(language.lower(), LANGUAGE_IMPORT_CONFIGS["python"])
-    
-    # Build import instructions for the selected language
+
+    # JavaScript import instructions
     import_instructions = f"""
-For {lang_config['description']}:
-- If the source code exports classes/functions, import them using: {lang_config['named_imports']}
-- If the source code uses default exports, import using: {lang_config['default_imports']}
-- The file being imported must be named {lang_config['source_file']}
+For JavaScript:
+- If the source code exports functions/classes using module.exports, import them using: {JAVASCRIPT_IMPORT_CONFIG['named_imports']}
+- If the source code uses default exports, import using: {JAVASCRIPT_IMPORT_CONFIG['default_imports']}
+- The file being imported must be named {JAVASCRIPT_IMPORT_CONFIG['source_file']}
 """
-    
-    prompt = UNIT_TEST_PROMPT.format(
-        code=code, 
-        language=language.capitalize(),
-        import_instructions=import_instructions
-    )
+
+    prompt = UNIT_TEST_PROMPT.format(code=code, import_instructions=import_instructions)
     response = client.generate_tests(prompt)
     return response
 
-def evaluate_test_quality(code: str, test_code: str, language: str = "python") -> TestQualityResult:
+
+def evaluate_test_quality(
+    code: str, test_code: str, language: str = "javascript"
+) -> TestQualityResult:
     client = get_llm_client("openai")  # Using OpenAI for evaluation
     client.model = "gpt-4"  # Using GPT-4 for better evaluation
-    
+
     # First, get actual code coverage using test analyzer
     actual_coverage_result = get_actual_coverage(code, test_code, language)
-    
-    prompt = TEST_QUALITY_EVALUATION_PROMPT.format(
-        code=code,
-        test_code=test_code,
-        language=language.capitalize()
-    )
-    
+
+    prompt = TEST_QUALITY_EVALUATION_PROMPT.format(code=code, test_code=test_code)
+
     try:
         # Get the evaluation response
         response = client.generate_tests(prompt)
-        
+
         # Parse the JSON response
         import json
         import re
 
         # Extract JSON from the response
-        json_match = re.search(r'\{.*\}', response.tests, re.DOTALL)
+        json_match = re.search(r"\{.*\}", response.tests, re.DOTALL)
         if json_match:
             json_str = json_match.group()
             evaluation_data = json.loads(json_str)
-            
+
             # Determine test execution success based on coverage error
             has_coverage_error = bool(actual_coverage_result.error_message)
             test_execution_success = not has_coverage_error
-            
+
             return TestQualityResult(
                 quality_score=float(evaluation_data.get("quality_score", 5.0)),
                 feedback=evaluation_data.get("feedback", []),
@@ -189,8 +143,10 @@ def evaluate_test_quality(code: str, test_code: str, language: str = "python") -
                 actual_coverage=actual_coverage_result.coverage_percentage,
                 lines_covered=actual_coverage_result.lines_covered,
                 lines_total=actual_coverage_result.lines_total,
-                branch_coverage=actual_coverage_result.branch_coverage or 0.0,  # Branch coverage percentage
-                branches_total=actual_coverage_result.branches_total or 0,  # May be None from Jest
+                branch_coverage=actual_coverage_result.branch_coverage
+                or 0.0,  # Branch coverage percentage
+                branches_total=actual_coverage_result.branches_total
+                or 0,  # May be None from Jest
                 coverage_error=actual_coverage_result.error_message or "",
                 test_execution_success=actual_coverage_result.test_execution_success,
                 test_suites_total=actual_coverage_result.test_suites_total,
@@ -200,13 +156,13 @@ def evaluate_test_quality(code: str, test_code: str, language: str = "python") -
                 tests_passed=actual_coverage_result.tests_passed,
                 execution_time=actual_coverage_result.time_taken,
                 execution_error=actual_coverage_result.execution_error or "",
-                test_details=actual_coverage_result.test_details or []
+                test_details=actual_coverage_result.test_details or [],
             )
         else:
             # Fallback if JSON parsing fails
             has_coverage_error = bool(actual_coverage_result.error_message)
             test_execution_success = not has_coverage_error
-            
+
             return TestQualityResult(
                 quality_score=5.0,
                 feedback=["Unable to parse evaluation response"],
@@ -225,16 +181,17 @@ def evaluate_test_quality(code: str, test_code: str, language: str = "python") -
                 tests_failed=actual_coverage_result.tests_failed,
                 tests_passed=actual_coverage_result.tests_passed,
                 execution_time=actual_coverage_result.time_taken,
-                execution_error=actual_coverage_result.execution_error or f"Failed to parse evaluation response: {response.tests}",
-                test_details=actual_coverage_result.test_details or []
+                execution_error=actual_coverage_result.execution_error
+                or f"Failed to parse evaluation response: {response.tests}",
+                test_details=actual_coverage_result.test_details or [],
             )
-            
+
     except Exception as e:
         print(f"Error evaluating test quality: {e}")
         # Return a default result on error
         has_coverage_error = bool(actual_coverage_result.error_message)
         test_execution_success = not has_coverage_error
-        
+
         return TestQualityResult(
             quality_score=5.0,
             feedback=[f"Evaluation failed: {str(e)}"],
@@ -253,49 +210,38 @@ def evaluate_test_quality(code: str, test_code: str, language: str = "python") -
             tests_failed=actual_coverage_result.tests_failed,
             tests_passed=actual_coverage_result.tests_passed,
             execution_time=actual_coverage_result.time_taken,
-            execution_error=actual_coverage_result.execution_error or f"Evaluation failed: {str(e)}",
-            test_details=actual_coverage_result.test_details or []
+            execution_error=actual_coverage_result.execution_error
+            or f"Evaluation failed: {str(e)}",
+            test_details=actual_coverage_result.test_details or [],
         )
 
 
-def get_actual_coverage(code: str, test_code: str, language: str) -> CoverageResult:
+def get_actual_coverage(
+    code: str, test_code: str, language: str = "javascript"
+) -> CoverageResult:
     """
-    Get actual code coverage using the appropriate test analyzer.
-    
+    Get actual code coverage using Jest for JavaScript.
+
     Args:
         code: Source code to analyze
         test_code: Test code to run
-        language: Programming language
-        
+        language: Programming language (always JavaScript)
+
     Returns:
         CoverageResult with actual coverage metrics
     """
     try:
-        # Map language to analyzer using the same configuration
-        language_to_analyzer = {
-            "javascript": "jest",
-            "typescript": "jest", 
-            "js": "jest",
-            "ts": "jest",
-            "python": "python",
-            "py": "python",
-            "java": "java",
-            "go": "go",
-            "rust": "rust",
-            "csharp": "csharp"
-        }
-        
-        analyzer_name = language_to_analyzer.get(language.lower(), "python")
-        
-        # Get the appropriate analyzer
-        analyzer = get_test_analyzer(analyzer_name)
-        
+        # Use Jest analyzer for JavaScript
+        analyzer = get_test_analyzer("jest")
+
         # Run coverage analysis
         result = analyzer.analyze_coverage(code, test_code)
-        
-        print(f"Coverage analysis completed: {result.coverage_percentage:.2f}% coverage")
+
+        print(
+            f"Coverage analysis completed: {result.coverage_percentage:.2f}% coverage"
+        )
         return result
-        
+
     except Exception as e:
         print(f"Error in coverage analysis: {e}")
         # Return a default result on error
@@ -303,5 +249,5 @@ def get_actual_coverage(code: str, test_code: str, language: str) -> CoverageRes
             coverage_percentage=0.0,
             lines_covered=0,
             lines_total=0,
-            error_message=f"Coverage analysis failed: {str(e)}"
+            error_message=f"Coverage analysis failed: {str(e)}",
         )
