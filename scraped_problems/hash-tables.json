@@ -1,0 +1,83 @@
+{
+  "category": "hash-tables",
+  "problems": [
+    {
+      "id": "12",
+      "title": "Integer to Roman",
+      "slug": "integer-to-roman",
+      "difficulty": "Medium",
+      "category": "hash-tables",
+      "description": "Seven different symbols represent Roman numerals with the following values: Symbol Value I 1 V 5 X 10 L 50 C 100 D 500 M 1000 Roman numerals are formed by appending&nbsp;the conversions of&nbsp;decimal place values&nbsp;from highest to lowest. Converting a decimal place value into a Roman numeral has the following rules: If the value does not start with 4 or&nbsp;9, select the symbol of the maximal value that can be subtracted from the input, append that symbol to the result, subtract its value, and convert the remainder to a Roman numeral. If the value starts with 4 or 9 use the&nbsp;subtractive form&nbsp;representing&nbsp;one symbol subtracted from the following symbol, for example,&nbsp;4 is 1 (I) less than 5 (V): IV&nbsp;and 9 is 1 (I) less than 10 (X): IX.&nbsp;Only the following subtractive forms are used: 4 (IV), 9 (IX),&nbsp;40 (XL), 90 (XC), 400 (CD) and 900 (CM). Only powers of 10 (I, X, C, M) can be appended consecutively at most 3 times to represent multiples of 10. You cannot append 5&nbsp;(V), 50 (L), or 500 (D) multiple times. If you need to append a symbol&nbsp;4 times&nbsp;use the subtractive form. Given an integer, convert it to a Roman numeral. &nbsp;",
+      "examples": [
+        {
+          "input": "num = 3749",
+          "output": "&quot;MMMDCCXLIX&quot;"
+        },
+        {
+          "input": "num = 58",
+          "output": "&quot;LVIII&quot;"
+        },
+        {
+          "input": "num = 1994",
+          "output": "&quot;MCMXCIV&quot;"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Integer to Roman\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 6945.2667130963055,
+      "likes": 0,
+      "dislikes": 0
+    },
+    {
+      "id": "13",
+      "title": "Roman to Integer",
+      "slug": "roman-to-integer",
+      "difficulty": "Easy",
+      "category": "hash-tables",
+      "description": "Roman numerals are represented by seven different symbols:&nbsp;I, V, X, L, C, D and M. Symbol Value I 1 V 5 X 10 L 50 C 100 D 500 M 1000 For example,&nbsp;2 is written as II&nbsp;in Roman numeral, just two ones added together. 12 is written as&nbsp;XII, which is simply X + II. The number 27 is written as XXVII, which is XX + V + II. Roman numerals are usually written largest to smallest from left to right. However, the numeral for four is not IIII. Instead, the number four is written as IV. Because the one is before the five we subtract it making four. The same principle applies to the number nine, which is written as IX. There are six instances where subtraction is used: I can be placed before V (5) and X (10) to make 4 and 9.&nbsp; X can be placed before L (50) and C (100) to make 40 and 90.&nbsp; C can be placed before D (500) and M (1000) to make 400 and 900. Given a roman numeral, convert it to an integer. &nbsp;",
+      "examples": [
+        {
+          "input": "s = &quot;III&quot;",
+          "output": "3"
+        },
+        {
+          "input": "s = &quot;LVIII&quot;",
+          "output": "58"
+        },
+        {
+          "input": "s = &quot;MCMXCIV&quot;",
+          "output": "1994"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Roman to Integer\n    // Difficulty: Easy\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 6551.573267629929,
+      "likes": 0,
+      "dislikes": 0
+    },
+    {
+      "id": "3",
+      "title": "Longest Substring Without Repeating Characters",
+      "slug": "longest-substring-without-repeating-characters",
+      "difficulty": "Medium",
+      "category": "hash-tables",
+      "description": "Given a string s, find the length of the longest substring without duplicate characters. &nbsp;",
+      "examples": [
+        {
+          "input": "s = &quot;abcabcbb&quot;",
+          "output": "3"
+        },
+        {
+          "input": "s = &quot;bbbbb&quot;",
+          "output": "1"
+        },
+        {
+          "input": "s = &quot;pwwkew&quot;",
+          "output": "3"
+        }
+      ],
+      "top_solution": "function lengthOfLongestSubstring(s) {\n    const seen = new Set();\n    let left = 0;\n    let maxLength = 0;\n    \n    for (let right = 0; right < s.length; right++) {\n        while (seen.has(s[right])) {\n            seen.delete(s[left]);\n            left++;\n        }\n        \n        seen.add(s[right]);\n        maxLength = Math.max(maxLength, right - left + 1);\n    }\n    \n    return maxLength;\n}\n\nmodule.exports = { lengthOfLongestSubstring };",
+      "acceptance_rate": 3762.0322924275547,
+      "likes": 0,
+      "dislikes": 0
+    }
+  ]
+}

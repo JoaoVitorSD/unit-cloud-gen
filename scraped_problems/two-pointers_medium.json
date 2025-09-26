@@ -1,0 +1,28 @@
+{
+  "category": "two-pointers",
+  "difficulty": "Medium",
+  "problems": [
+    {
+      "id": "5",
+      "title": "Longest Palindromic Substring",
+      "slug": "longest-palindromic-substring",
+      "difficulty": "Medium",
+      "category": "two-pointers",
+      "description": "Given a string s, return the longest palindromic substring in s. &nbsp;",
+      "examples": [
+        {
+          "input": "s = &quot;babad&quot;",
+          "output": "&quot;bab&quot;"
+        },
+        {
+          "input": "s = &quot;cbbd&quot;",
+          "output": "&quot;bb&quot;"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Longest Palindromic Substring\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 3647.6265793356765,
+      "likes": 0,
+      "dislikes": 0
+    }
+  ]
+}

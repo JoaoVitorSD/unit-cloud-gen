@@ -1,0 +1,28 @@
+{
+  "category": "strings",
+  "difficulty": "Easy",
+  "problems": [
+    {
+      "id": 14,
+      "title": "Longest Common Prefix",
+      "slug": "longest-common-prefix",
+      "difficulty": "Easy",
+      "category": "strings",
+      "description": "Write a function to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string \"\".",
+      "examples": [
+        {
+          "input": "strs = [\"flower\",\"flow\",\"flight\"]",
+          "output": "\"fl\""
+        },
+        {
+          "input": "strs = [\"dog\",\"racecar\",\"car\"]",
+          "output": "\"\""
+        }
+      ],
+      "top_solution": "function longestCommonPrefix(strs) {\n    if (!strs || strs.length === 0) return \"\";\n    \n    let prefix = strs[0];\n    \n    for (let i = 1; i < strs.length; i++) {\n        while (strs[i].indexOf(prefix) !== 0) {\n            prefix = prefix.substring(0, prefix.length - 1);\n            if (prefix === \"\") return \"\";\n        }\n    }\n    \n    return prefix;\n}\n\nmodule.exports = { longestCommonPrefix };",
+      "acceptance_rate": 37.1,
+      "likes": 18000,
+      "dislikes": 1000
+    }
+  ]
+}

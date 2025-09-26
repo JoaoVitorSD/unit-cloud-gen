@@ -1,0 +1,31 @@
+{
+  "category": "linked-lists",
+  "problems": [
+    {
+      "id": "2",
+      "title": "Add Two Numbers",
+      "slug": "add-two-numbers",
+      "difficulty": "Medium",
+      "category": "linked-lists",
+      "description": "You are given two non-empty linked lists representing two non-negative integers. The digits are stored in reverse order, and each of their nodes contains a single digit. Add the two numbers and return the sum&nbsp;as a linked list. You may assume the two numbers do not contain any leading zero, except the number 0 itself. &nbsp;",
+      "examples": [
+        {
+          "input": "l1 = [2,4,3], l2 = [5,6,4]",
+          "output": "[7,0,8]"
+        },
+        {
+          "input": "l1 = [0], l2 = [0]",
+          "output": "[0]"
+        },
+        {
+          "input": "l1 = [9,9,9,9,9,9,9], l2 = [9,9,9,9]",
+          "output": "[8,9,9,9,0,0,0,1]"
+        }
+      ],
+      "top_solution": "function addTwoNumbers(l1, l2) {\n    let dummy = new ListNode(0);\n    let current = dummy;\n    let carry = 0;\n    \n    while (l1 || l2 || carry) {\n        const sum = (l1?.val || 0) + (l2?.val || 0) + carry;\n        carry = Math.floor(sum / 10);\n        current.next = new ListNode(sum % 10);\n        current = current.next;\n        \n        l1 = l1?.next;\n        l2 = l2?.next;\n    }\n    \n    return dummy.next;\n}\n\nmodule.exports = { addTwoNumbers };",
+      "acceptance_rate": 4699.8067465515915,
+      "likes": 0,
+      "dislikes": 0
+    }
+  ]
+}

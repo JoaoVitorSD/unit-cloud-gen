@@ -1,0 +1,32 @@
+{
+  "category": "math",
+  "difficulty": "Easy",
+  "problems": [
+    {
+      "id": "9",
+      "title": "Palindrome Number",
+      "slug": "palindrome-number",
+      "difficulty": "Easy",
+      "category": "math",
+      "description": "Given an integer x, return true if x is a palindrome, and false otherwise. &nbsp;",
+      "examples": [
+        {
+          "input": "x = 121",
+          "output": "true"
+        },
+        {
+          "input": "x = -121",
+          "output": "false"
+        },
+        {
+          "input": "x = 10",
+          "output": "false"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Palindrome Number\n    // Difficulty: Easy\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 5969.277794215351,
+      "likes": 0,
+      "dislikes": 0
+    }
+  ]
+}

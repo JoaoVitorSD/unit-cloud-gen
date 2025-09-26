@@ -1,0 +1,16 @@
+{
+  "total_problems": 15,
+  "categories": {
+    "hash-tables": 3,
+    "math": 2,
+    "arrays": 5,
+    "strings": 3,
+    "linked-lists": 1,
+    "two-pointers": 1
+  },
+  "difficulties": {
+    "Easy": 4,
+    "Medium": 9,
+    "Hard": 2
+  }
+}

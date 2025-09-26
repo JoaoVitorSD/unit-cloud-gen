@@ -1,0 +1,57 @@
+{
+  "category": "math",
+  "problems": [
+    {
+      "id": "9",
+      "title": "Palindrome Number",
+      "slug": "palindrome-number",
+      "difficulty": "Easy",
+      "category": "math",
+      "description": "Given an integer x, return true if x is a palindrome, and false otherwise. &nbsp;",
+      "examples": [
+        {
+          "input": "x = 121",
+          "output": "true"
+        },
+        {
+          "input": "x = -121",
+          "output": "false"
+        },
+        {
+          "input": "x = 10",
+          "output": "false"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Palindrome Number\n    // Difficulty: Easy\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 5969.277794215351,
+      "likes": 0,
+      "dislikes": 0
+    },
+    {
+      "id": "7",
+      "title": "Reverse Integer",
+      "slug": "reverse-integer",
+      "difficulty": "Medium",
+      "category": "math",
+      "description": "Given a signed 32-bit integer x, return x with its digits reversed. If reversing x causes the value to go outside the signed 32-bit integer range [-231, 231 - 1], then return 0. Assume the environment does not allow you to store 64-bit integers (signed or unsigned). &nbsp;",
+      "examples": [
+        {
+          "input": "x = 123",
+          "output": "321"
+        },
+        {
+          "input": "x = -123",
+          "output": "-321"
+        },
+        {
+          "input": "x = 120",
+          "output": "21"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Reverse Integer\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 3082.7750957315375,
+      "likes": 0,
+      "dislikes": 0
+    }
+  ]
+}

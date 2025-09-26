@@ -1,0 +1,91 @@
+{
+  "category": "strings",
+  "problems": [
+    {
+      "id": "6",
+      "title": "Zigzag Conversion",
+      "slug": "zigzag-conversion",
+      "difficulty": "Medium",
+      "category": "strings",
+      "description": "The string &quot;PAYPALISHIRING&quot; is written in a zigzag pattern on a given number of rows like this: (you may want to display this pattern in a fixed font for better legibility) P A H N A P L S I I G Y I R And then read line by line: &quot;PAHNAPLSIIGYIR&quot; Write the code that will take a string and make this conversion given a number of rows: string convert(string s, int numRows); &nbsp;",
+      "examples": [
+        {
+          "input": "s = &quot;PAYPALISHIRING&quot;, numRows = 3",
+          "output": "&quot;PAHNAPLSIIGYIR&quot;"
+        },
+        {
+          "input": "s = &quot;PAYPALISHIRING&quot;, numRows = 4",
+          "output": "&quot;PINALSIGYAHRPI&quot;"
+        },
+        {
+          "input": "s = &quot;A&quot;, numRows = 1",
+          "output": "&quot;A&quot;"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Zigzag Conversion\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 5241.627357169268,
+      "likes": 0,
+      "dislikes": 0
+    },
+    {
+      "id": "10",
+      "title": "Regular Expression Matching",
+      "slug": "regular-expression-matching",
+      "difficulty": "Hard",
+      "category": "strings",
+      "description": "Given an input string s&nbsp;and a pattern p, implement regular expression matching with support for &#39;.&#39; and &#39;*&#39; where: &#39;.&#39; Matches any single character.​​​​ &#39;*&#39; Matches zero or more of the preceding element. The matching should cover the entire input string (not partial). &nbsp;",
+      "examples": [
+        {
+          "input": "s = &quot;aa&quot;, p = &quot;a&quot;",
+          "output": "false"
+        },
+        {
+          "input": "s = &quot;aa&quot;, p = &quot;a*&quot;",
+          "output": "true"
+        },
+        {
+          "input": "s = &quot;ab&quot;, p = &quot;.*&quot;",
+          "output": "true"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Regular Expression Matching\n    // Difficulty: Hard\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 2968.4507747997845,
+      "likes": 0,
+      "dislikes": 0
+    },
+    {
+      "id": "8",
+      "title": "String to Integer (atoi)",
+      "slug": "string-to-integer-atoi",
+      "difficulty": "Medium",
+      "category": "strings",
+      "description": "Implement the myAtoi(string s) function, which converts a string to a 32-bit signed integer. The algorithm for myAtoi(string s) is as follows: Whitespace: Ignore any leading whitespace (&quot; &quot;). Signedness: Determine the sign by checking if the next character is &#39;-&#39; or &#39;+&#39;, assuming positivity if neither present. Conversion: Read the integer by skipping leading zeros&nbsp;until a non-digit character is encountered or the end of the string is reached. If no digits were read, then the result is 0. Rounding: If the integer is out of the 32-bit signed integer range [-231, 231 - 1], then round the integer to remain in the range. Specifically, integers less than -231 should be rounded to -231, and integers greater than 231 - 1 should be rounded to 231 - 1. Return the integer as the final result. &nbsp;",
+      "examples": [
+        {
+          "input": "s = &quot;42&quot;",
+          "output": "42"
+        },
+        {
+          "input": "s = &quot; -042&quot;",
+          "output": "-42"
+        },
+        {
+          "input": "s = &quot;1337c0d3&quot;",
+          "output": "1337"
+        },
+        {
+          "input": "s = &quot;0-1&quot;",
+          "output": "0"
+        },
+        {
+          "input": "s = &quot;words and 987&quot;",
+          "output": "0"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for String to Integer (atoi)\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 1982.51886874419,
+      "likes": 0,
+      "dislikes": 0
+    }
+  ]
+}

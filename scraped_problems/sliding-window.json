@@ -1,0 +1,31 @@
+{
+  "category": "sliding-window",
+  "problems": [
+    {
+      "id": 3,
+      "title": "Longest Substring Without Repeating Characters",
+      "slug": "longest-substring-without-repeating-characters",
+      "difficulty": "Medium",
+      "category": "sliding-window",
+      "description": "Given a string s, find the length of the longest substring without repeating characters.",
+      "examples": [
+        {
+          "input": "s = \"abcabcbb\"",
+          "output": "3"
+        },
+        {
+          "input": "s = \"bbbbb\"",
+          "output": "1"
+        },
+        {
+          "input": "s = \"pwwkew\"",
+          "output": "3"
+        }
+      ],
+      "top_solution": "function lengthOfLongestSubstring(s) {\n    const seen = new Set();\n    let left = 0;\n    let maxLength = 0;\n    \n    for (let right = 0; right < s.length; right++) {\n        while (seen.has(s[right])) {\n            seen.delete(s[left]);\n            left++;\n        }\n        \n        seen.add(s[right]);\n        maxLength = Math.max(maxLength, right - left + 1);\n    }\n    \n    return maxLength;\n}\n\nmodule.exports = { lengthOfLongestSubstring };",
+      "acceptance_rate": 31.1,
+      "likes": 30000,
+      "dislikes": 1200
+    }
+  ]
+}

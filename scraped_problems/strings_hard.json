@@ -1,0 +1,32 @@
+{
+  "category": "strings",
+  "difficulty": "Hard",
+  "problems": [
+    {
+      "id": "10",
+      "title": "Regular Expression Matching",
+      "slug": "regular-expression-matching",
+      "difficulty": "Hard",
+      "category": "strings",
+      "description": "Given an input string s&nbsp;and a pattern p, implement regular expression matching with support for &#39;.&#39; and &#39;*&#39; where: &#39;.&#39; Matches any single character.​​​​ &#39;*&#39; Matches zero or more of the preceding element. The matching should cover the entire input string (not partial). &nbsp;",
+      "examples": [
+        {
+          "input": "s = &quot;aa&quot;, p = &quot;a&quot;",
+          "output": "false"
+        },
+        {
+          "input": "s = &quot;aa&quot;, p = &quot;a*&quot;",
+          "output": "true"
+        },
+        {
+          "input": "s = &quot;ab&quot;, p = &quot;.*&quot;",
+          "output": "true"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Regular Expression Matching\n    // Difficulty: Hard\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 2968.4507747997845,
+      "likes": 0,
+      "dislikes": 0
+    }
+  ]
+}

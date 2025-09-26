@@ -1,7 +1,7 @@
 import {
   getDefaultCodeForLanguage,
   getProblemsByDifficulty,
-} from "@/assets/defaultCode";
+} from "@/assets/leetcodeProblems";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -80,10 +80,14 @@ const getProblems = (): Problem[] => {
   const allProblems: Problem[] = [];
 
   Object.entries(problemsByDifficulty).forEach(([difficulty, problems]) => {
-    problems.forEach(([key, entry]) => {
+    problems.forEach((problem) => {
+      const key = `${problem.difficulty.toLowerCase()}_${problem.slug.replace(
+        "-",
+        "_"
+      )}`;
       allProblems.push({
         key,
-        name: entry.description,
+        name: problem.description,
         difficulty: difficulty.charAt(0).toUpperCase() + difficulty.slice(1),
       });
     });
@@ -288,11 +292,17 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
                         <div className="px-2 py-1 text-xs font-semibold text-muted-foreground uppercase">
                           {difficulty}
                         </div>
-                        {problems.map(([key, entry]) => (
-                          <SelectItem key={key} value={key}>
-                            {entry.description}
-                          </SelectItem>
-                        ))}
+                        {problems.map((problem) => {
+                          const key = `${problem.difficulty.toLowerCase()}_${problem.slug.replace(
+                            "-",
+                            "_"
+                          )}`;
+                          return (
+                            <SelectItem key={key} value={key}>
+                              {problem.title} - {problem.description}
+                            </SelectItem>
+                          );
+                        })}
                       </div>
                     )
                   )}

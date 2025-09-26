@@ -1,0 +1,54 @@
+{
+  "category": "arrays",
+  "difficulty": "Medium",
+  "problems": [
+    {
+      "id": "11",
+      "title": "Container With Most Water",
+      "slug": "container-with-most-water",
+      "difficulty": "Medium",
+      "category": "arrays",
+      "description": "You are given an integer array height of length n. There are n vertical lines drawn such that the two endpoints of the ith line are (i, 0) and (i, height[i]). Find two lines that together with the x-axis form a container, such that the container contains the most water. Return the maximum amount of water a container can store. Notice that you may not slant the container. &nbsp;",
+      "examples": [
+        {
+          "input": "height = [1,8,6,2,5,4,8,3,7]",
+          "output": "49"
+        },
+        {
+          "input": "height = [1,1]",
+          "output": "1"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Container With Most Water\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 5836.306541698873,
+      "likes": 0,
+      "dislikes": 0
+    },
+    {
+      "id": "15",
+      "title": "3Sum",
+      "slug": "3sum",
+      "difficulty": "Medium",
+      "category": "arrays",
+      "description": "Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, and j != k, and nums[i] + nums[j] + nums[k] == 0. Notice that the solution set must not contain duplicate triplets. &nbsp;",
+      "examples": [
+        {
+          "input": "nums = [-1,0,1,2,-1,-4]",
+          "output": "[[-1,-1,2],[-1,0,1]]"
+        },
+        {
+          "input": "nums = [0,1,1]",
+          "output": "[]"
+        },
+        {
+          "input": "nums = [0,0,0]",
+          "output": "[[0,0,0]]"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for 3Sum\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 3774.875673218375,
+      "likes": 0,
+      "dislikes": 0
+    }
+  ]
+}

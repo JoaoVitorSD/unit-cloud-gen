@@ -1,0 +1,31 @@
+{
+  "category": "dynamic-programming",
+  "problems": [
+    {
+      "id": 10,
+      "title": "Regular Expression Matching",
+      "slug": "regular-expression-matching",
+      "difficulty": "Hard",
+      "category": "dynamic-programming",
+      "description": "Given an input string s and a pattern p, implement regular expression matching with support for '.' and '*'.",
+      "examples": [
+        {
+          "input": "s = \"aa\", p = \"a\"",
+          "output": "false"
+        },
+        {
+          "input": "s = \"aa\", p = \"a*\"",
+          "output": "true"
+        },
+        {
+          "input": "s = \"ab\", p = \".*\"",
+          "output": "true"
+        }
+      ],
+      "top_solution": "function isMatch(s, p) {\n    const dp = Array(s.length + 1).fill().map(() => Array(p.length + 1).fill(false));\n    dp[0][0] = true;\n    \n    for (let j = 1; j <= p.length; j++) {\n        if (p[j - 1] === '*') {\n            dp[0][j] = dp[0][j - 2];\n        }\n    }\n    \n    for (let i = 1; i <= s.length; i++) {\n        for (let j = 1; j <= p.length; j++) {\n            if (p[j - 1] === s[i - 1] || p[j - 1] === '.') {\n                dp[i][j] = dp[i - 1][j - 1];\n            } else if (p[j - 1] === '*') {\n                dp[i][j] = dp[i][j - 2];\n                if (p[j - 2] === s[i - 1] || p[j - 2] === '.') {\n                    dp[i][j] = dp[i][j] || dp[i - 1][j];\n                }\n            }\n        }\n    }\n    \n    return dp[s.length][p.length];\n}\n\nmodule.exports = { isMatch };",
+      "acceptance_rate": 26.8,
+      "likes": 10000,
+      "dislikes": 3000
+    }
+  ]
+}

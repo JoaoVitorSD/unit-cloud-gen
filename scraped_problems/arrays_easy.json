@@ -1,0 +1,54 @@
+{
+  "category": "arrays",
+  "difficulty": "Easy",
+  "problems": [
+    {
+      "id": "1",
+      "title": "Two Sum",
+      "slug": "two-sum",
+      "difficulty": "Easy",
+      "category": "arrays",
+      "description": "Given an array of integers nums&nbsp;and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order. &nbsp;",
+      "examples": [
+        {
+          "input": "nums = [2,7,11,15], target = 9",
+          "output": "[0,1]"
+        },
+        {
+          "input": "nums = [3,2,4], target = 6",
+          "output": "[1,2]"
+        },
+        {
+          "input": "nums = [3,3], target = 6",
+          "output": "[0,1]"
+        }
+      ],
+      "top_solution": "function twoSum(nums, target) {\n    const map = new Map();\n    \n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        \n        if (map.has(complement)) {\n            return [map.get(complement), i];\n        }\n        \n        map.set(nums[i], i);\n    }\n    \n    return [];\n}\n\nmodule.exports = { twoSum };",
+      "acceptance_rate": 5634.236520611699,
+      "likes": 0,
+      "dislikes": 0
+    },
+    {
+      "id": "14",
+      "title": "Longest Common Prefix",
+      "slug": "longest-common-prefix",
+      "difficulty": "Easy",
+      "category": "arrays",
+      "description": "Write a function to find the longest common prefix string amongst an array of strings. If there is no common prefix, return an empty string &quot;&quot;. &nbsp;",
+      "examples": [
+        {
+          "input": "strs = [&quot;flower&quot;,&quot;flow&quot;,&quot;flight&quot;]",
+          "output": "&quot;fl&quot;"
+        },
+        {
+          "input": "strs = [&quot;dog&quot;,&quot;racecar&quot;,&quot;car&quot;]",
+          "output": "&quot;&quot;"
+        }
+      ],
+      "top_solution": "function solve() {\n    // TODO: Implement solution for Longest Common Prefix\n    // Difficulty: Easy\n    return null;\n}\n\nmodule.exports = { solve };",
+      "acceptance_rate": 4622.632837003741,
+      "likes": 0,
+      "dislikes": 0
+    }
+  ]
+}
