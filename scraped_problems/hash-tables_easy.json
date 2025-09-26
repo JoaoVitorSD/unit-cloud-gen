@@ -23,8 +23,8 @@
           "output": "1994"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Roman to Integer\n    // Difficulty: Easy\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 6551.573267629929,
+      "top_solution": "function romanToInt(s) {\n    const romanMap = {\n        'I': 1, 'V': 5, 'X': 10, 'L': 50,\n        'C': 100, 'D': 500, 'M': 1000\n    };\n    \n    let result = 0;\n    \n    for (let i = 0; i < s.length; i++) {\n        const current = romanMap[s[i]];\n        const next = romanMap[s[i + 1]];\n        \n        if (next && current < next) {\n            result -= current;\n        } else {\n            result += current;\n        }\n    }\n    \n    return result;\n}\n\nmodule.exports = { romanToInt };",
+      "acceptance_rate": 6551.579626371113,
       "likes": 0,
       "dislikes": 0
     }

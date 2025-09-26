@@ -23,8 +23,8 @@
           "output": "false"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Palindrome Number\n    // Difficulty: Easy\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 5969.277794215351,
+      "top_solution": "function isPalindrome(x) {\n    if (x < 0) return false;\n    if (x < 10) return true;\n    \n    let original = x;\n    let reversed = 0;\n    \n    while (x > 0) {\n        reversed = reversed * 10 + x % 10;\n        x = Math.floor(x / 10);\n    }\n    \n    return original === reversed;\n}\n\nmodule.exports = { isPalindrome };",
+      "acceptance_rate": 5969.251250588682,
       "likes": 0,
       "dislikes": 0
     }

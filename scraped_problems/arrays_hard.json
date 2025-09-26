@@ -19,8 +19,8 @@
           "output": "2.50000"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Median of Two Sorted Arrays\n    // Difficulty: Hard\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 4479.230740579621,
+      "top_solution": "function findMedianSortedArrays(nums1, nums2) {\n    if (nums1.length > nums2.length) {\n        [nums1, nums2] = [nums2, nums1];\n    }\n    \n    const m = nums1.length;\n    const n = nums2.length;\n    let left = 0;\n    let right = m;\n    \n    while (left <= right) {\n        const partitionX = Math.floor((left + right) / 2);\n        const partitionY = Math.floor((m + n + 1) / 2) - partitionX;\n        \n        const maxLeftX = partitionX === 0 ? -Infinity : nums1[partitionX - 1];\n        const minRightX = partitionX === m ? Infinity : nums1[partitionX];\n        \n        const maxLeftY = partitionY === 0 ? -Infinity : nums2[partitionY - 1];\n        const minRightY = partitionY === n ? Infinity : nums2[partitionY];\n        \n        if (maxLeftX <= minRightY && maxLeftY <= minRightX) {\n            if ((m + n) % 2 === 0) {\n                return (Math.max(maxLeftX, maxLeftY) + Math.min(minRightX, minRightY)) / 2;\n            } else {\n                return Math.max(maxLeftX, maxLeftY);\n            }\n        } else if (maxLeftX > minRightY) {\n            right = partitionX - 1;\n        } else {\n            left = partitionX + 1;\n        }\n    }\n    \n    return 0;\n}\n\nmodule.exports = { findMedianSortedArrays };",
+      "acceptance_rate": 4479.244224569235,
       "likes": 0,
       "dislikes": 0
     }

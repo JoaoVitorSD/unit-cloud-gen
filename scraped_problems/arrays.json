@@ -18,8 +18,8 @@
           "output": "1"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Container With Most Water\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 5836.306541698873,
+      "top_solution": "function maxArea(height) {\n    let left = 0;\n    let right = height.length - 1;\n    let maxWater = 0;\n    \n    while (left < right) {\n        const width = right - left;\n        const minHeight = Math.min(height[left], height[right]);\n        const currentArea = width * minHeight;\n        maxWater = Math.max(maxWater, currentArea);\n        \n        if (height[left] < height[right]) {\n            left++;\n        } else {\n            right--;\n        }\n    }\n    \n    return maxWater;\n}\n\nmodule.exports = { maxArea };",
+      "acceptance_rate": 5836.338604322683,
       "likes": 0,
       "dislikes": 0
     },
@@ -45,7 +45,7 @@
         }
       ],
       "top_solution": "function twoSum(nums, target) {\n    const map = new Map();\n    \n    for (let i = 0; i < nums.length; i++) {\n        const complement = target - nums[i];\n        \n        if (map.has(complement)) {\n            return [map.get(complement), i];\n        }\n        \n        map.set(nums[i], i);\n    }\n    \n    return [];\n}\n\nmodule.exports = { twoSum };",
-      "acceptance_rate": 5634.236520611699,
+      "acceptance_rate": 5634.23315238428,
       "likes": 0,
       "dislikes": 0
     },
@@ -66,8 +66,8 @@
           "output": "&quot;&quot;"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Longest Common Prefix\n    // Difficulty: Easy\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 4622.632837003741,
+      "top_solution": "function longestCommonPrefix(strs) {\n    if (!strs || strs.length === 0) return '';\n    \n    let prefix = strs[0];\n    \n    for (let i = 1; i < strs.length; i++) {\n        while (strs[i].indexOf(prefix) !== 0) {\n            prefix = prefix.substring(0, prefix.length - 1);\n            if (prefix === '') return '';\n        }\n    }\n    \n    return prefix;\n}\n\nmodule.exports = { longestCommonPrefix };",
+      "acceptance_rate": 4622.647349255396,
       "likes": 0,
       "dislikes": 0
     },
@@ -88,8 +88,8 @@
           "output": "2.50000"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Median of Two Sorted Arrays\n    // Difficulty: Hard\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 4479.230740579621,
+      "top_solution": "function findMedianSortedArrays(nums1, nums2) {\n    if (nums1.length > nums2.length) {\n        [nums1, nums2] = [nums2, nums1];\n    }\n    \n    const m = nums1.length;\n    const n = nums2.length;\n    let left = 0;\n    let right = m;\n    \n    while (left <= right) {\n        const partitionX = Math.floor((left + right) / 2);\n        const partitionY = Math.floor((m + n + 1) / 2) - partitionX;\n        \n        const maxLeftX = partitionX === 0 ? -Infinity : nums1[partitionX - 1];\n        const minRightX = partitionX === m ? Infinity : nums1[partitionX];\n        \n        const maxLeftY = partitionY === 0 ? -Infinity : nums2[partitionY - 1];\n        const minRightY = partitionY === n ? Infinity : nums2[partitionY];\n        \n        if (maxLeftX <= minRightY && maxLeftY <= minRightX) {\n            if ((m + n) % 2 === 0) {\n                return (Math.max(maxLeftX, maxLeftY) + Math.min(minRightX, minRightY)) / 2;\n            } else {\n                return Math.max(maxLeftX, maxLeftY);\n            }\n        } else if (maxLeftX > minRightY) {\n            right = partitionX - 1;\n        } else {\n            left = partitionX + 1;\n        }\n    }\n    \n    return 0;\n}\n\nmodule.exports = { findMedianSortedArrays };",
+      "acceptance_rate": 4479.244224569235,
       "likes": 0,
       "dislikes": 0
     },
@@ -114,8 +114,8 @@
           "output": "[[0,0,0]]"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for 3Sum\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 3774.875673218375,
+      "top_solution": "function threeSum(nums) {\n    nums.sort((a, b) => a - b);\n    const result = [];\n    \n    for (let i = 0; i < nums.length - 2; i++) {\n        if (i > 0 && nums[i] === nums[i - 1]) continue;\n        \n        let left = i + 1;\n        let right = nums.length - 1;\n        \n        while (left < right) {\n            const sum = nums[i] + nums[left] + nums[right];\n            \n            if (sum === 0) {\n                result.push([nums[i], nums[left], nums[right]]);\n                \n                while (left < right && nums[left] === nums[left + 1]) left++;\n                while (left < right && nums[right] === nums[right - 1]) right--;\n                \n                left++;\n                right--;\n            } else if (sum < 0) {\n                left++;\n            } else {\n                right--;\n            }\n        }\n    }\n    \n    return result;\n}\n\nmodule.exports = { threeSum };",
+      "acceptance_rate": 3774.890352695148,
       "likes": 0,
       "dislikes": 0
     }

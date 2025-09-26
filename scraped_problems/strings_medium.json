@@ -23,8 +23,8 @@
           "output": "&quot;A&quot;"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Zigzag Conversion\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 5241.627357169268,
+      "top_solution": "function convert(s, numRows) {\n    if (numRows === 1) return s;\n    \n    const rows = new Array(numRows).fill('');\n    let currentRow = 0;\n    let goingDown = false;\n    \n    for (const char of s) {\n        rows[currentRow] += char;\n        \n        if (currentRow === 0 || currentRow === numRows - 1) {\n            goingDown = !goingDown;\n        }\n        \n        currentRow += goingDown ? 1 : -1;\n    }\n    \n    return rows.join('');\n}\n\nmodule.exports = { convert };",
+      "acceptance_rate": 5241.613744301832,
       "likes": 0,
       "dislikes": 0
     },
@@ -57,8 +57,8 @@
           "output": "0"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for String to Integer (atoi)\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 1982.51886874419,
+      "top_solution": "function myAtoi(s) {\n    s = s.trim();\n    if (!s) return 0;\n    \n    let sign = 1;\n    let i = 0;\n    \n    if (s[0] === '+' || s[0] === '-') {\n        sign = s[0] === '-' ? -1 : 1;\n        i = 1;\n    }\n    \n    let result = 0;\n    \n    while (i < s.length && s[i] >= '0' && s[i] <= '9') {\n        result = result * 10 + (s[i] - '0');\n        i++;\n    }\n    \n    result *= sign;\n    \n    // Clamp to 32-bit integer range\n    if (result > 2147483647) return 2147483647;\n    if (result < -2147483648) return -2147483648;\n    \n    return result;\n}\n\nmodule.exports = { myAtoi };",
+      "acceptance_rate": 1982.5194273372945,
       "likes": 0,
       "dislikes": 0
     }

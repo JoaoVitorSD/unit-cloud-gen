@@ -24,7 +24,7 @@
         }
       ],
       "top_solution": "function addTwoNumbers(l1, l2) {\n    let dummy = new ListNode(0);\n    let current = dummy;\n    let carry = 0;\n    \n    while (l1 || l2 || carry) {\n        const sum = (l1?.val || 0) + (l2?.val || 0) + carry;\n        carry = Math.floor(sum / 10);\n        current.next = new ListNode(sum % 10);\n        current = current.next;\n        \n        l1 = l1?.next;\n        l2 = l2?.next;\n    }\n    \n    return dummy.next;\n}\n\nmodule.exports = { addTwoNumbers };",
-      "acceptance_rate": 4699.8067465515915,
+      "acceptance_rate": 4699.818611316941,
       "likes": 0,
       "dislikes": 0
     }

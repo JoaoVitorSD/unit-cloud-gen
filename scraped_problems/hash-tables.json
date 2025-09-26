@@ -22,8 +22,8 @@
           "output": "&quot;MCMXCIV&quot;"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Integer to Roman\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 6945.2667130963055,
+      "top_solution": "function intToRoman(num) {\n    const values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];\n    const symbols = ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];\n    \n    let result = '';\n    \n    for (let i = 0; i < values.length; i++) {\n        while (num >= values[i]) {\n            result += symbols[i];\n            num -= values[i];\n        }\n    }\n    \n    return result;\n}\n\nmodule.exports = { intToRoman };",
+      "acceptance_rate": 6945.2904530977985,
       "likes": 0,
       "dislikes": 0
     },
@@ -48,8 +48,8 @@
           "output": "1994"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Roman to Integer\n    // Difficulty: Easy\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 6551.573267629929,
+      "top_solution": "function romanToInt(s) {\n    const romanMap = {\n        'I': 1, 'V': 5, 'X': 10, 'L': 50,\n        'C': 100, 'D': 500, 'M': 1000\n    };\n    \n    let result = 0;\n    \n    for (let i = 0; i < s.length; i++) {\n        const current = romanMap[s[i]];\n        const next = romanMap[s[i + 1]];\n        \n        if (next && current < next) {\n            result -= current;\n        } else {\n            result += current;\n        }\n    }\n    \n    return result;\n}\n\nmodule.exports = { romanToInt };",
+      "acceptance_rate": 6551.579626371113,
       "likes": 0,
       "dislikes": 0
     },
@@ -75,7 +75,7 @@
         }
       ],
       "top_solution": "function lengthOfLongestSubstring(s) {\n    const seen = new Set();\n    let left = 0;\n    let maxLength = 0;\n    \n    for (let right = 0; right < s.length; right++) {\n        while (seen.has(s[right])) {\n            seen.delete(s[left]);\n            left++;\n        }\n        \n        seen.add(s[right]);\n        maxLength = Math.max(maxLength, right - left + 1);\n    }\n    \n    return maxLength;\n}\n\nmodule.exports = { lengthOfLongestSubstring };",
-      "acceptance_rate": 3762.0322924275547,
+      "acceptance_rate": 3762.0353648132955,
       "likes": 0,
       "dislikes": 0
     }

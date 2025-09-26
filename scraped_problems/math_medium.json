@@ -23,8 +23,8 @@
           "output": "21"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Reverse Integer\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 3082.7750957315375,
+      "top_solution": "cpp // pop operation: pop = x % 10; x /= 10; // push operation: temp = rev * 10 + pop; rev = temp;\n\nmodule.exports = { solution };",
+      "acceptance_rate": 3082.788108971376,
       "likes": 0,
       "dislikes": 0
     }

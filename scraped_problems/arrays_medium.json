@@ -19,8 +19,8 @@
           "output": "1"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for Container With Most Water\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 5836.306541698873,
+      "top_solution": "function maxArea(height) {\n    let left = 0;\n    let right = height.length - 1;\n    let maxWater = 0;\n    \n    while (left < right) {\n        const width = right - left;\n        const minHeight = Math.min(height[left], height[right]);\n        const currentArea = width * minHeight;\n        maxWater = Math.max(maxWater, currentArea);\n        \n        if (height[left] < height[right]) {\n            left++;\n        } else {\n            right--;\n        }\n    }\n    \n    return maxWater;\n}\n\nmodule.exports = { maxArea };",
+      "acceptance_rate": 5836.338604322683,
       "likes": 0,
       "dislikes": 0
     },
@@ -45,8 +45,8 @@
           "output": "[[0,0,0]]"
         }
       ],
-      "top_solution": "function solve() {\n    // TODO: Implement solution for 3Sum\n    // Difficulty: Medium\n    return null;\n}\n\nmodule.exports = { solve };",
-      "acceptance_rate": 3774.875673218375,
+      "top_solution": "function threeSum(nums) {\n    nums.sort((a, b) => a - b);\n    const result = [];\n    \n    for (let i = 0; i < nums.length - 2; i++) {\n        if (i > 0 && nums[i] === nums[i - 1]) continue;\n        \n        let left = i + 1;\n        let right = nums.length - 1;\n        \n        while (left < right) {\n            const sum = nums[i] + nums[left] + nums[right];\n            \n            if (sum === 0) {\n                result.push([nums[i], nums[left], nums[right]]);\n                \n                while (left < right && nums[left] === nums[left + 1]) left++;\n                while (left < right && nums[right] === nums[right - 1]) right--;\n                \n                left++;\n                right--;\n            } else if (sum < 0) {\n                left++;\n            } else {\n                right--;\n            }\n        }\n    }\n    \n    return result;\n}\n\nmodule.exports = { threeSum };",
+      "acceptance_rate": 3774.890352695148,
       "likes": 0,
       "dislikes": 0
     }
