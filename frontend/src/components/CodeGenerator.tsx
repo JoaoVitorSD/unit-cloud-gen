@@ -111,30 +111,24 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
   const [selectedProblem, setSelectedProblem] =
     useState<string>("easy_two_sum");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [selectedProvider, setSelectedProvider] = useState<string>("");
-  const [selectedModel, setSelectedModel] = useState<string>("");
+  const [selectedModel, setSelectedModel] = useState<string>("gpt-4");
   const [generatedTests, setGeneratedTests] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const [modelsByProvider, setModelsByProvider] = useState<{
-    [key: string]: ProviderInfo;
-  }>({});
+  const [availableModels, setAvailableModels] = useState<ModelInfo[]>([]);
 
-  // Fetch available providers and models on component mount
   useEffect(() => {
-    const fetchProvidersAndModels = async (): Promise<void> => {
+    const fetchModels = async (): Promise<void> => {
       try {
-        // Fetch models (which includes provider info)
         const modelsResponse = await fetch("http://localhost:8000/models");
         if (!modelsResponse.ok) {
           throw new Error("Failed to fetch models");
         }
         const modelsData: ModelsResponse = await modelsResponse.json();
-        setModelsByProvider(modelsData.models_by_provider);
 
-        // Set default to OpenAI only
         if (modelsData.models_by_provider.openai) {
-          setSelectedProvider("openai");
           const openaiModels = modelsData.models_by_provider.openai.models;
+          setAvailableModels(openaiModels);
+
           if (openaiModels.length > 0) {
             const gpt4Model =
               openaiModels.find((m) => m.id === "gpt-4") || openaiModels[0];
@@ -147,7 +141,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
       }
     };
 
-    fetchProvidersAndModels();
+    fetchModels();
   }, []);
 
   // Update code when problem changes
@@ -159,28 +153,12 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
     setSelectedProblem(value);
   };
 
-  const handleProviderChange = (value: string): void => {
-    setSelectedProvider(value);
-    const providerModels = modelsByProvider[value];
-    if (providerModels && providerModels.models.length > 0) {
-      setSelectedModel(providerModels.models[0].id);
-    }
-  };
-
   const handleModelChange = (value: string): void => {
     setSelectedModel(value);
   };
 
-  // Helper functions to get current model and provider info
   const getCurrentModelInfo = (): ModelInfo | null => {
-    const providerModels = modelsByProvider[selectedProvider];
-    return (
-      providerModels?.models.find((model) => model.id === selectedModel) || null
-    );
-  };
-
-  const getCurrentProviderInfo = (): ProviderInfo | null => {
-    return modelsByProvider[selectedProvider] || null;
+    return availableModels.find((model) => model.id === selectedModel) || null;
   };
 
   const handleGenerate = async (): Promise<void> => {
@@ -196,7 +174,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
         },
         body: JSON.stringify({
           code: code,
-          provider: selectedProvider,
+          provider: "openai",
           model: selectedModel,
           language: "javascript",
         }),
@@ -325,44 +303,8 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
 
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Zap className="h-4 w-4" />
-                <span>AI Settings:</span>
+                <span>AI Model:</span>
               </div>
-
-              <Select
-                value={selectedProvider}
-                onValueChange={handleProviderChange}
-              >
-                <SelectTrigger className="w-auto min-w-[140px] flex-grow bg-background border-input transition-colors duration-300">
-                  {selectedProvider && modelsByProvider[selectedProvider] ? (
-                    <div className="flex flex-col items-start text-left">
-                      <span className="font-medium text-sm">
-                        {modelsByProvider[selectedProvider].name}
-                      </span>
-                      <span className="text-xs text-muted-foreground truncate">
-                        {modelsByProvider[selectedProvider].description}
-                      </span>
-                    </div>
-                  ) : (
-                    <SelectValue placeholder="Provider" />
-                  )}
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(modelsByProvider)
-                    .filter(([providerId]) => providerId === "openai")
-                    .map(([providerId, providerInfo]) => (
-                      <SelectItem key={providerId} value={providerId}>
-                        <div className="flex flex-col">
-                          <span className="font-medium">
-                            {providerInfo.name}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {providerInfo.description}
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
 
               <Select value={selectedModel} onValueChange={handleModelChange}>
                 <SelectTrigger className="w-auto min-w-[200px] flex-grow bg-background border-input transition-colors duration-300">
@@ -376,11 +318,11 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
                       </span>
                     </div>
                   ) : (
-                    <SelectValue placeholder="Model" />
+                    <SelectValue placeholder="Select Model" />
                   )}
                 </SelectTrigger>
                 <SelectContent>
-                  {(modelsByProvider[selectedProvider]?.models || [])
+                  {availableModels
                     .filter((model: ModelInfo) => model.id.includes("gpt"))
                     .map((model: ModelInfo) => (
                       <SelectItem key={model.id} value={model.id}>
@@ -396,10 +338,9 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
               </Select>
             </div>
 
-            {getCurrentProviderInfo() && getCurrentModelInfo() && (
+            {getCurrentModelInfo() && (
               <div className="mt-2 text-xs text-muted-foreground">
-                <span className="font-medium">Provider:</span>{" "}
-                {getCurrentProviderInfo()?.name} |{" "}
+                <span className="font-medium">Provider:</span> OpenAI |{" "}
                 <span className="font-medium">Model:</span>{" "}
                 {getCurrentModelInfo()?.name}
               </div>
@@ -479,7 +420,7 @@ const CodeGenerator: React.FC<CodeGeneratorProps> = ({
         GeneratedTests={generatedTests}
         setGeneratedTests={setGeneratedTests}
         language="javascript"
-        provider={selectedProvider}
+        provider="openai"
         model={selectedModel}
         originalCode={code}
         onQualityResults={onQualityResults}

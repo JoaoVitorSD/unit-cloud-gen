@@ -46,6 +46,7 @@ interface TestQualityResults {
     suite: string;
     name: string;
     status: string;
+    error_message?: string;
   }>;
 }
 
@@ -349,15 +350,17 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
                     </span>
                   </div>
 
-                  {/* Execution Error */}
-                  {qualityResults.execution_error && (
-                    <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded">
-                      <AlertTriangle className="h-4 w-4" />
-                      <span>
-                        Execution Error: {qualityResults.execution_error}
-                      </span>
-                    </div>
-                  )}
+                  {/* Execution Error - only show if we don't have test_details */}
+                  {qualityResults.execution_error &&
+                    (!qualityResults.test_details ||
+                      qualityResults.test_details.length === 0) && (
+                      <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 p-2 rounded whitespace-pre-wrap break-words max-h-40 overflow-y-auto">
+                        <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                        <span className="text-xs">
+                          {qualityResults.execution_error}
+                        </span>
+                      </div>
+                    )}
                 </div>
               </div>
               <Separator />
@@ -402,47 +405,79 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
                 </div>
               </div>
               <Separator />
+
+              {/* Individual Test Results - moved here for better visibility */}
+              {qualityResults!.test_details &&
+                qualityResults!.test_details.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+                      <Code className="h-4 w-4" />
+                      Individual Test Results (
+                      {qualityResults!.test_details.length})
+                    </h3>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {qualityResults!.test_details.map(
+                        (
+                          test: {
+                            suite: string;
+                            name: string;
+                            status: string;
+                            error_message?: string;
+                          },
+                          index: number
+                        ) => (
+                          <div
+                            key={index}
+                            className={`p-2 rounded ${
+                              test.status === "passed"
+                                ? "bg-green-50 dark:bg-green-900/20"
+                                : "bg-red-50 dark:bg-red-900/20"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 text-sm">
+                              <div
+                                className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                                  test.status === "passed"
+                                    ? "bg-green-500"
+                                    : "bg-red-500"
+                                }`}
+                              />
+                              <span
+                                className={`font-medium ${
+                                  test.status === "passed"
+                                    ? "text-green-700 dark:text-green-300"
+                                    : "text-red-700 dark:text-red-300"
+                                }`}
+                              >
+                                {test.status === "passed" ? "✓" : "✕"}
+                              </span>
+                              <span
+                                className={`flex-1 ${
+                                  test.status === "passed"
+                                    ? "text-green-700 dark:text-green-300"
+                                    : "text-red-700 dark:text-red-300"
+                                }`}
+                              >
+                                {test.name}
+                              </span>
+                            </div>
+                            {test.status === "failed" && test.error_message && (
+                              <div className="mt-1 ml-6 text-xs text-red-600 dark:text-red-400 font-mono bg-red-100 dark:bg-red-950/30 p-2 rounded border border-red-200 dark:border-red-800">
+                                → {test.error_message}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                )}
+
+              {/* Add separator after Individual Test Results */}
+              {qualityResults!.test_details &&
+                qualityResults!.test_details.length > 0 && <Separator />}
             </>
           )}
-
-          {/* Individual Test Results */}
-          {qualityResults &&
-            qualityResults.test_details &&
-            qualityResults.test_details.length > 0 && (
-              <>
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-                    <Code className="h-4 w-4" />
-                    Individual Test Results
-                  </h3>
-                  <div className="space-y-2 max-h-40 overflow-y-auto">
-                    {qualityResults.test_details.map((test, index) => (
-                      <div
-                        key={index}
-                        className={`flex items-center gap-2 text-sm p-2 rounded ${
-                          test.status === "passed"
-                            ? "bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
-                            : "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
-                        }`}
-                      >
-                        <div
-                          className={`w-2 h-2 rounded-full ${
-                            test.status === "passed"
-                              ? "bg-green-500"
-                              : "bg-red-500"
-                          }`}
-                        />
-                        <span className="font-medium">
-                          {test.status === "passed" ? "✓" : "✕"}
-                        </span>
-                        <span className="truncate">{test.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <Separator />
-              </>
-            )}
 
           {/* Quality Feedback Section */}
           {qualityResults && qualityResults.feedback.length > 0 && (

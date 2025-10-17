@@ -25,6 +25,13 @@ interface TestQualityResponse {
   tests_passed: number;
   execution_time: number;
   execution_error: string;
+  // Individual test results
+  test_details?: Array<{
+    suite: string;
+    name: string;
+    status: string;
+    error_message?: string;
+  }>;
 }
 
 interface GeneratedTestsProps {
@@ -209,7 +216,6 @@ const GeneratedTests: React.FC<GeneratedTestsProps> = ({
                   {testExecutionStatus.total} total)
                 </span>
               </div>
-       
             </div>
           )}
 

@@ -14,65 +14,74 @@ logger = logging.getLogger(__name__)
 
 class JestAnalyzer(BaseTestAnalyzer):
     """Jest implementation using Docker container for JavaScript/TypeScript code coverage analysis."""
-    
+
     def __init__(self):
         super().__init__("javascript", "test-analyzer-javascript:latest")
-    
+
     def analyze_coverage(self, source_code: str, test_code: str) -> CoverageResult:
         """Analyze code coverage using Docker container for JavaScript/TypeScript."""
         self._start_timer()
-        
+
         try:
             # Run Docker container with source and test code
-            return_code, stdout, stderr = self._run_docker_container(source_code, test_code)
-            
+            return_code, stdout, stderr = self._run_docker_container(
+                source_code, test_code
+            )
+
             time_taken = self._get_elapsed_time()
-            
-            if return_code != 0:
+
+            # Parse Jest output regardless of return code
+            # (Jest returns non-zero when tests fail, which is expected)
+            container_result = self._parse_jest_output(stdout, stderr)
+
+            # Check if we got valid test results
+            # If no JSON was found, it means Docker/Jest actually crashed
+            if return_code != 0 and container_result.get("tests_total", 0) == 0:
                 logger.error(f"Docker container failed with return code {return_code}")
                 logger.error(f"Docker stderr: {stderr}")
                 logger.error(f"Docker stdout: {stdout}")
-                
+
                 return CoverageResult(
                     coverage_percentage=0.0,
                     lines_covered=0,
                     lines_total=0,
                     time_taken=time_taken,
-                    error_message=f"Docker container failed with return code {return_code}: {stderr}",
+                    error_message=f"Docker container failed: Unable to parse test results",
                     test_execution_success=False,
                     test_suites_total=1,
                     test_suites_failed=1,
                     tests_total=0,
                     tests_failed=0,
                     tests_passed=0,
-                    execution_error=stderr
+                    execution_error="Test execution failed - no results generated",
                 )
-            
-            # Parse Jest output
-            container_result = self._parse_jest_output(stdout, stderr)
-            
+
             # Convert to CoverageResult
             coverage_result = CoverageResult(
                 coverage_percentage=container_result.get("coverage_percentage", 0.0),
                 lines_covered=container_result.get("lines_covered", 0),
                 lines_total=container_result.get("lines_total", 0),
-                branch_coverage=float(container_result.get("branch_coverage", 0.0)),  # Branch coverage percentage
+                branch_coverage=float(
+                    container_result.get("branch_coverage", 0.0)
+                ),  # Branch coverage percentage
                 branches_total=None,  # Jest doesn't provide total branch count
                 time_taken=time_taken,
                 error_message=container_result.get("error_message"),
                 coverage_details=container_result.get("coverage_details"),
-                test_execution_success=container_result.get("test_execution_success", False),
+                test_execution_success=container_result.get(
+                    "test_execution_success", False
+                ),
                 test_suites_total=container_result.get("test_suites_total", 0),
                 test_suites_failed=container_result.get("test_suites_failed", 0),
                 tests_total=container_result.get("tests_total", 0),
                 tests_failed=container_result.get("tests_failed", 0),
                 tests_passed=container_result.get("tests_passed", 0),
                 execution_error=container_result.get("execution_error"),
-                test_details=container_result.get("test_details", [])
+                test_details=container_result.get("test_details", []),
             )
-            
+
             return coverage_result
-            
+
         except Exception as e:
             time_taken = self._get_elapsed_time()
             logger.error(f"Error analyzing coverage: {str(e)}", exc_info=True)
@@ -88,9 +97,9 @@ class JestAnalyzer(BaseTestAnalyzer):
                 tests_total=0,
                 tests_failed=0,
                 tests_passed=0,
-                execution_error=str(e)
+                execution_error=str(e),
             )
-    
+
     def _parse_jest_output(self, stdout: str, stderr: str) -> Dict[str, Any]:
         """Parse Jest output to extract coverage and test results."""
         try:
@@ -108,26 +117,27 @@ class JestAnalyzer(BaseTestAnalyzer):
                 "tests_failed": 0,
                 "tests_passed": 0,
                 "execution_error": None,
-                "test_details": []  # Individual test results
+                "test_details": [],  # Individual test results
             }
-            
-            # Parse coverage from stdout
-            coverage_data = self._parse_coverage_from_stdout(stdout)
-            result.update(coverage_data)
-            
-            # Parse test results from stderr
-            test_data = self._parse_test_results_from_stderr(stderr)
+
+            # Parse test results from JSON output in stdout
+            jest_json, test_data = self._parse_test_results_from_json(stdout)
             result.update(test_data)
-            
+
+            # Parse coverage from JSON (if available)
+            if jest_json:
+                coverage_data = self._parse_coverage_from_json(jest_json)
+                result.update(coverage_data)
+
             # Determine success
             result["test_execution_success"] = (
-                result["tests_failed"] == 0 and 
-                result["test_suites_failed"] == 0
+                result["tests_failed"] == 0 and result["test_suites_failed"] == 0
             )
-            
+
             return result
-            
+
         except Exception as e:
+            logger.error(f"Error parsing Jest output: {str(e)}", exc_info=True)
             return {
                 "coverage_percentage": 0.0,
                 "lines_covered": 0,
@@ -141,74 +151,77 @@ class JestAnalyzer(BaseTestAnalyzer):
                 "tests_failed": 0,
                 "tests_passed": 0,
                 "execution_error": f"Failed to parse Jest output: {str(e)}",
-                "test_details": []
+                "test_details": [],
             }
-    
-    def _parse_coverage_from_stdout(self, stdout: str) -> Dict[str, Any]:
-        """Parse coverage information from Jest stdout."""
+
+    def _parse_coverage_from_json(self, jest_json: Dict[str, Any]) -> Dict[str, Any]:
+        """Parse coverage information from Jest JSON output."""
         try:
             result = {
                 "coverage_percentage": 0.0,
                 "lines_covered": 0,
                 "lines_total": 0,
-                "branch_coverage": 0.0,  # Branch coverage percentage
-                "branches_total": 0
+                "branch_coverage": 0.0,
+                "branches_total": 0,
             }
-            
-            lines = stdout.split('\n')
-            
-            for line in lines:
-                # Look for "All files" line for overall coverage percentage
-                if "All files" in line and "%" in line:
-                    # Extract percentage from line like "All files  |     100 |       50 |     100 |     100 |"
-                    parts = line.split('|')
-                    if len(parts) >= 2:
-                        percentage_str = parts[1].strip()
-                        try:
-                            result["coverage_percentage"] = float(percentage_str)
-                        except ValueError:
-                            pass
-                
-                # Look for specific file coverage (source.js)
-                elif "source.js" in line and "|" in line:
-                    # Extract specific file coverage
-                    parts = line.split('|')
-                    if len(parts) >= 5:  # Need at least 5 parts for all coverage metrics
-                        try:
-                            # Format: "source.js |     100 |       50 |     100 |     100 | 2"
-                            # Parts: [0] filename, [1] statements, [2] branches, [3] functions, [4] lines
-                            statements_str = parts[1].strip()
-                            branches_str = parts[2].strip()
-                            
-                            if statements_str and statements_str != "% Stmts":
-                                try:
-                                    result["coverage_percentage"] = float(statements_str)
-                                except ValueError:
-                                    pass
-                            
-                            if branches_str and branches_str != "% Branch":
-                                try:
-                                    result["branch_coverage"] = float(branches_str)  # Branch coverage percentage
-                                except ValueError:
-                                    pass
-                                
-                        except (ValueError, IndexError):
-                            pass
-            
+
+            coverage_map = jest_json.get("coverageMap", {})
+
+            if not coverage_map:
+                logger.warning("No coverageMap found in Jest JSON output")
+                return result
+
+            # Aggregate coverage across all files
+            total_statements = 0
+            covered_statements = 0
+            total_branches = 0
+            covered_branches = 0
+
+            for file_path, file_coverage in coverage_map.items():
+                # Get statement coverage
+                statement_map = file_coverage.get("s", {})
+                for stmt_id, hit_count in statement_map.items():
+                    total_statements += 1
+                    if hit_count > 0:
+                        covered_statements += 1
+
+                # Get branch coverage
+                branch_map = file_coverage.get("b", {})
+                for branch_id, branch_hits in branch_map.items():
+                    if isinstance(branch_hits, list):
+                        for hit_count in branch_hits:
+                            total_branches += 1
+                            if hit_count > 0:
+                                covered_branches += 1
+
+            # Calculate percentages
+            if total_statements > 0:
+                result["coverage_percentage"] = (
+                    covered_statements / total_statements
+                ) * 100
+                result["lines_covered"] = covered_statements
+                result["lines_total"] = total_statements
+
+            if total_branches > 0:
+                result["branch_coverage"] = (covered_branches / total_branches) * 100
+                result["branches_total"] = total_branches
+
             return result
-            
+
         except Exception as e:
-            logger.error(f"Error parsing coverage from stdout: {str(e)}", exc_info=True)
+            logger.error(f"Error parsing coverage from JSON: {str(e)}", exc_info=True)
             return {
                 "coverage_percentage": 0.0,
                 "lines_covered": 0,
                 "lines_total": 0,
-                "branch_coverage": 0.0,  # Branch coverage percentage
-                "branches_total": 0
+                "branch_coverage": 0.0,
+                "branches_total": 0,
             }
-    
-    def _parse_test_results_from_stderr(self, stderr: str) -> Dict[str, Any]:
-        """Parse test results from Jest stderr."""
+
+    def _parse_test_results_from_json(
+        self, stdout: str
+    ) -> tuple[Dict[str, Any] | None, Dict[str, Any]]:
+        """Parse test results from Jest JSON output. Returns (jest_json, result_dict)."""
         try:
             result: Dict[str, Any] = {
                 "test_suites_total": 1,
@@ -216,60 +229,131 @@ class JestAnalyzer(BaseTestAnalyzer):
                 "tests_total": 0,
                 "tests_failed": 0,
                 "tests_passed": 0,
-                "test_details": []
+                "test_details": [],
             }
-            
-            lines = stderr.split('\n')
-            current_suite = ""
+
+            # Extract JSON from between markers
+            json_start = stdout.find("===JSON_RESULTS_START===")
+            json_end = stdout.find("===JSON_RESULTS_END===")
+
+            if json_start == -1 or json_end == -1:
+                logger.warning("JSON markers not found in output")
+                return None, result
+
+            json_str = stdout[
+                json_start + len("===JSON_RESULTS_START===") : json_end
+            ].strip()
+
+            if not json_str:
+                logger.warning("Empty JSON output")
+                return None, result
+
+            # Parse JSON
+            jest_json = json.loads(json_str)
+
+            # Extract test counts
+            result["tests_total"] = jest_json.get("numTotalTests", 0)
+            result["tests_passed"] = jest_json.get("numPassedTests", 0)
+            result["tests_failed"] = jest_json.get("numFailedTests", 0)
+            result["test_suites_total"] = jest_json.get("numTotalTestSuites", 1)
+            result["test_suites_failed"] = jest_json.get("numFailedTestSuites", 0)
+
+            # Extract individual test details
             test_details = []
-            
-            for line in lines:
-                # Test summary patterns
-                if "Test Suites:" in line:
-                    # Pattern: "Test Suites: 2 passed, 2 total"
-                    match = re.match(r"Test Suites:\s*(\d+)\s*(passed|failed),\s*(\d+)\s*total", line)
-                    if match:
-                        if match.group(2) == "failed":
-                            result["test_suites_failed"] = int(match.group(1))
+            test_results = jest_json.get("testResults", [])
+
+            for test_suite in test_results:
+                suite_name = (
+                    test_suite.get("name", "")
+                    .replace("/app/workspace/", "")
+                    .replace("/app/", "")
+                )
+                assertion_results = test_suite.get("assertionResults", [])
+
+                for assertion in assertion_results:
+                    test_name = assertion.get("title", "")
+                    status = assertion.get("status", "unknown")
+                    failure_messages = assertion.get("failureMessages", [])
+
+                    # Extract error message if test failed
+                    error_message = ""
+                    if status == "failed" and failure_messages:
+                        # Get first failure message and clean it up
+                        raw_error = failure_messages[0]
+                        lines = raw_error.split("\n")
+
+                        # Try to find the main assertion error
+                        main_error = ""
+                        expected_received = []
+
+                        for i, line in enumerate(lines):
+                            line_stripped = line.strip()
+
+                            # Get the main expect() line
+                            if line_stripped.startswith("expect(") and not main_error:
+                                main_error = line_stripped
+
+                            # Collect Expected/Received comparison lines
+                            if line_stripped.startswith(
+                                "- Expected"
+                            ) or line_stripped.startswith("+ Received"):
+                                main_error = line_stripped
+                                # Get the next few lines for context
+                                for j in range(i + 1, min(i + 4, len(lines))):
+                                    next_line = lines[j].strip()
+                                    if next_line and not next_line.startswith("at "):
+                                        expected_received.append(next_line)
+                                    else:
+                                        break
+                                break
+
+                        # Build the error message
+                        if main_error:
+                            error_message = main_error
+                            if expected_received:
+                                # Add first few lines of comparison
+                                error_message += " | " + " ".join(expected_received[:3])
                         else:
-                            result["test_suites_failed"] = 0
-                        result["test_suites_total"] = int(match.group(3))
-                
-                elif "Tests:" in line:
-                    # Pattern: "Tests: 14 passed, 14 total"
-                    match = re.match(r"Tests:\s*(\d+)\s*passed(?:,\s*(\d+)\s*failed)?,\s*(\d+)\s*total", line)
-                    if match:
-                        result["tests_passed"] = int(match.group(1))
-                        result["tests_failed"] = int(match.group(2)) if match.group(2) else 0
-                        result["tests_total"] = int(match.group(3))
-                
-                # Extract individual test results
-                elif "PASS" in line and ".js" in line:
-                    # New test suite started
-                    current_suite = line.strip()
-                
-                elif "✓" in line or "✕" in line:
-                    # Individual test result
-                    test_match = re.match(r'\s*[✓✕]\s+(.+)', line)
-                    if test_match:
-                        test_name = test_match.group(1).strip()
-                        test_status = "passed" if "✓" in line else "failed"
-                        test_details.append({
-                            "suite": current_suite,
+                            # Fallback: use first non-empty, non-stack-trace line
+                            for line in lines:
+                                line_stripped = line.strip()
+                                if line_stripped and not line_stripped.startswith(
+                                    "at "
+                                ):
+                                    error_message = line_stripped
+                                    break
+
+                    test_details.append(
+                        {
+                            "suite": suite_name,
                             "name": test_name,
-                            "status": test_status
-                        })
-            
+                            "status": status,
+                            "error_message": error_message,
+                        }
+                    )
+
             result["test_details"] = test_details
-            return result
-            
-        except Exception as e:
-            logger.error(f"Error parsing test results from stderr: {str(e)}", exc_info=True)
-            return {
+            return jest_json, result
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse JSON output: {str(e)}", exc_info=True)
+            return None, {
                 "test_suites_total": 1,
                 "test_suites_failed": 1,
                 "tests_total": 0,
                 "tests_failed": 0,
                 "tests_passed": 0,
-                "test_details": []
-            } 
+                "test_details": [],
+            }
+        except Exception as e:
+            logger.error(
+                f"Error parsing test results from JSON: {str(e)}", exc_info=True
+            )
+            return None, {
+                "test_suites_total": 1,
+                "test_suites_failed": 1,
+                "tests_total": 0,
+                "tests_failed": 0,
+                "tests_passed": 0,
+                "test_details": [],
+            }

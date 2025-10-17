@@ -16,9 +16,6 @@ COPY package.json /app/package.json
 # Install Jest and dependencies
 RUN npm install --silent
 
-# Create Jest setup file
-COPY jest.setup.js /app/jest.setup.js
-
 # Copy the entrypoint script
 COPY entrypoint.sh /app/entrypoint.sh
 

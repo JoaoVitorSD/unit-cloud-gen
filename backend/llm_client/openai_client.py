@@ -1,13 +1,12 @@
 import os
 from typing import Optional
 
-import openai
 from dotenv import load_dotenv
+from openai import OpenAI
 
 from .base_client import BaseLLMClient, TestGenerationResult
 
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 class OpenAIClient(BaseLLMClient):
@@ -44,6 +43,7 @@ class OpenAIClient(BaseLLMClient):
     
     def __init__(self, model: str = "gpt-4"):
         super().__init__(model)
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
     @classmethod
     def get_available_models(cls) -> dict:
@@ -55,7 +55,7 @@ class OpenAIClient(BaseLLMClient):
         self._start_timer()
         
         try:
-            response = openai.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": "Return only the test code — no explanations, no markdown, no triple backticks."},

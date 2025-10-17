@@ -39,7 +39,7 @@ class TestQualityResult:
 
 
 UNIT_TEST_PROMPT = """
-You are a JavaScript testing expert. Generate complete unit tests for the following JavaScript code using Jest framework:
+You are a JavaScript testing expert. Generate complete unit tests for the following JavaScript code using the Jest framework.
 
 Code:
 {code}
@@ -48,10 +48,21 @@ Please generate comprehensive unit tests that cover:
 - Normal/happy path scenarios
 - Edge cases and error conditions
 - Mock external dependencies if any
-- Use Jest assertions and testing patterns
 
 IMPORTANT: Make sure to properly import the source code being tested using:
 {import_instructions}
+
+JEST SYNTAX REQUIREMENTS:
+- Use describe() for test suites
+- Use test() or it() for individual tests
+- Use Jest assertions ONLY: expect().toBe(), expect().toEqual(), expect().toBeTruthy(), expect().toBeFalsy(), expect().toThrow(), etc.
+- DO NOT use Chai syntax (no .to.be, .to.equal, .to.have, etc.)
+- Examples of correct Jest assertions:
+  * expect(value).toBe(5)
+  * expect(array).toEqual([1, 2, 3])
+  * expect(obj).toHaveProperty('key')
+  * expect(fn).toThrow()
+  * expect(value).toBeTruthy()
 
 CRITICAL: Return ONLY the test code - no explanations, no markdown formatting, no triple backticks, no additional text. Just the pure executable Jest test code.
 """
