@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -10,9 +11,11 @@ import {
   GitBranch,
   Lightbulb,
   MessageSquare,
+  Save,
   Star,
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
+import type { ProblemDefinition } from "./ProblemDefinitionModal";
 
 interface TestResults {
   tests: string;
@@ -48,16 +51,108 @@ interface TestQualityResults {
     status: string;
     error_message?: string;
   }>;
+  // Evaluation cost and time
+  evaluation_tokens_used?: number;
+  evaluation_cost?: number;
+  evaluation_time?: number;
 }
 
 interface ResultsProps {
   testResults: TestResults | null;
   qualityResults?: TestQualityResults | null;
+  problemDefinition?: ProblemDefinition | null;
+  sourceCode?: string;
+  testCode?: string;
 }
 
-const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
+const Results: React.FC<ResultsProps> = ({
+  testResults,
+  qualityResults,
+  problemDefinition,
+  sourceCode,
+  testCode,
+}) => {
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<"success" | "error" | null>(
+    null
+  );
+
+  const handleSave = async () => {
+    if (!testResults || !qualityResults || !sourceCode || !testCode || !problemDefinition) {
+      console.warn("Cannot save: missing required data", {
+        testResults: !!testResults,
+        qualityResults: !!qualityResults,
+        sourceCode: !!sourceCode,
+        testCode: !!testCode,
+        problemDefinition: !!problemDefinition,
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveStatus(null);
+
+    try {
+      console.log("Saving with data:", {
+        problemDefinition,
+        sourceCode: sourceCode.substring(0, 50) + "...",
+        testCode: testCode.substring(0, 50) + "...",
+      });
+      
+      const saveData = {
+        problem_name: problemDefinition?.problem_name || null,
+        leetcode_link: problemDefinition?.leetcode_link || null,
+        rank: problemDefinition?.rank || null,
+        problem_type: problemDefinition?.problem_type || null,
+        definition: problemDefinition?.definition || null,
+        code: sourceCode,
+        test_code: testCode,
+        quality_score: qualityResults.quality_score,
+        coverage_estimate: qualityResults.coverage_estimate,
+        actual_coverage: qualityResults.actual_coverage,
+        tests_total: qualityResults.tests_total,
+        tests_passed: qualityResults.tests_passed,
+        tests_failed: qualityResults.tests_failed,
+        execution_time: qualityResults.execution_time,
+        evaluation_time: qualityResults.evaluation_time || 0,
+        generation_tokens: testResults.tokens_used,
+        generation_cost: testResults.estimated_cost,
+        evaluation_tokens: qualityResults.evaluation_tokens_used || 0,
+        evaluation_cost: qualityResults.evaluation_cost || 0,
+        test_details: qualityResults.test_details || null,
+        execution_error: qualityResults.execution_error || null,
+        coverage_error: qualityResults.coverage_error || null,
+      };
+
+      const response = await fetch("http://localhost:8000/save-problem-result", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(saveData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save");
+      }
+
+      setSaveStatus("success");
+      setTimeout(() => setSaveStatus(null), 3000);
+    } catch (err) {
+      console.error("Error saving:", err);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus(null), 3000);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Debug logging
-  console.log("Results component received:", { testResults, qualityResults });
+  console.log("Results component received:", {
+    testResults,
+    qualityResults,
+    problemDefinition,
+  });
 
   // If no test results, show empty state
   if (!testResults) {
@@ -129,16 +224,49 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
     <div className="h-[90vh] w-[30vw] bg-background border-l border-border shadow-lg transition-colors duration-300">
       <Card className="h-full rounded-none border-0 bg-card transition-colors duration-300">
         <CardHeader className="border-b border-border bg-muted/30 p-4 transition-colors duration-300">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg transition-colors duration-300">
-              <BarChart className="h-5 w-5 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg transition-colors duration-300">
+                <BarChart className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">Results</h2>
+                <p className="text-sm text-muted-foreground">
+                  Code analysis and metrics
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Results</h2>
-              <p className="text-sm text-muted-foreground">
-                Code analysis and metrics
-              </p>
-            </div>
+            {qualityResults && sourceCode && testCode && (
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+              >
+                {isSaving ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    Saving...
+                  </>
+                ) : saveStatus === "success" ? (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Saved!
+                  </>
+                ) : saveStatus === "error" ? (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Error
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </CardHeader>
 
@@ -407,16 +535,16 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
               <Separator />
 
               {/* Individual Test Results - moved here for better visibility */}
-              {qualityResults!.test_details &&
-                qualityResults!.test_details.length > 0 && (
+              {qualityResults?.test_details &&
+                qualityResults?.test_details?.length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
                       <Code className="h-4 w-4" />
                       Individual Test Results (
-                      {qualityResults!.test_details.length})
+                      {qualityResults?.test_details?.length})
                     </h3>
                     <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {qualityResults!.test_details.map(
+                      {qualityResults?.test_details?.map(
                         (
                           test: {
                             suite: string;
@@ -474,8 +602,8 @@ const Results: React.FC<ResultsProps> = ({ testResults, qualityResults }) => {
                 )}
 
               {/* Add separator after Individual Test Results */}
-              {qualityResults!.test_details &&
-                qualityResults!.test_details.length > 0 && <Separator />}
+              {qualityResults?.test_details &&
+                qualityResults?.test_details.length > 0 && <Separator />}
             </>
           )}
 

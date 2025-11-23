@@ -41,6 +41,10 @@ interface TestQualityResults {
   tests_passed: number;
   execution_time: number;
   execution_error: string;
+  // Evaluation cost and time
+  evaluation_tokens_used?: number;
+  evaluation_cost?: number;
+  evaluation_time?: number;
 }
 
 function App() {
@@ -54,6 +58,10 @@ function App() {
   );
   const [qualityResults, setQualityResults] =
     React.useState<TestQualityResults | null | undefined>(null);
+  const [problemDefinition, setProblemDefinition] =
+    React.useState<any | null>(null);
+  const [sourceCode, setSourceCode] = React.useState<string>("");
+  const [generatedTestCode, setGeneratedTestCode] = React.useState<string>("");
 
   useEffect(() => {
     if (darkMode) {
@@ -76,8 +84,17 @@ function App() {
           <CodeGenerator
             onTestResults={setTestResults}
             onQualityResults={setQualityResults}
+            onProblemDefinitionChange={setProblemDefinition}
+            onSourceCodeChange={setSourceCode}
+            onTestCodeChange={setGeneratedTestCode}
           />
-          <Results testResults={testResults} qualityResults={qualityResults} />
+          <Results
+            testResults={testResults}
+            qualityResults={qualityResults}
+            problemDefinition={problemDefinition}
+            sourceCode={sourceCode}
+            testCode={generatedTestCode}
+          />
         </main>
       </div>
     </QueryClientProvider>

@@ -124,8 +124,12 @@ class JestAnalyzer(BaseTestAnalyzer):
             jest_json, test_data = self._parse_test_results_from_json(stdout)
             result.update(test_data)
 
-            # Parse coverage from JSON (if available)
-            if jest_json:
+            # Parse coverage from coverage JSON file (preferred) or from jest_json
+            coverage_json = self._parse_coverage_json_file(stdout)
+            if coverage_json:
+                coverage_data = self._parse_coverage_from_coverage_json(coverage_json)
+                result.update(coverage_data)
+            elif jest_json:
                 coverage_data = self._parse_coverage_from_json(jest_json)
                 result.update(coverage_data)
 
@@ -152,6 +156,101 @@ class JestAnalyzer(BaseTestAnalyzer):
                 "tests_passed": 0,
                 "execution_error": f"Failed to parse Jest output: {str(e)}",
                 "test_details": [],
+            }
+
+    def _parse_coverage_json_file(self, stdout: str) -> Dict[str, Any] | None:
+        """Extract and parse coverage JSON from stdout markers."""
+        try:
+            coverage_start = stdout.find("===COVERAGE_JSON_START===")
+            coverage_end = stdout.find("===COVERAGE_JSON_END===")
+
+            if coverage_start == -1 or coverage_end == -1:
+                return None
+
+            coverage_str = stdout[
+                coverage_start + len("===COVERAGE_JSON_START===") : coverage_end
+            ].strip()
+
+            if not coverage_str:
+                return None
+
+            coverage_json = json.loads(coverage_str)
+            return coverage_json
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse coverage JSON: {str(e)}")
+            return None
+        except Exception as e:
+            logger.error(f"Error extracting coverage JSON: {str(e)}")
+            return None
+
+    def _parse_coverage_from_coverage_json(
+        self, coverage_json: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Parse coverage from Jest coverage-final.json format."""
+        try:
+            result = {
+                "coverage_percentage": 0.0,
+                "lines_covered": 0,
+                "lines_total": 0,
+                "branch_coverage": 0.0,
+                "branches_total": 0,
+            }
+
+            total_statements = 0
+            covered_statements = 0
+            total_branches = 0
+            covered_branches = 0
+
+            for file_path, file_coverage in coverage_json.items():
+                statements = file_coverage.get("statementMap", {})
+                s = file_coverage.get("s", {})
+
+                for stmt_id in statements.keys():
+                    total_statements += 1
+                    if s.get(stmt_id, 0) > 0:
+                        covered_statements += 1
+
+                branch_map = file_coverage.get("branchMap", {})
+                b = file_coverage.get("b", {})
+
+                for branch_id, branch_info in branch_map.items():
+                    locations = branch_info.get("locations", [])
+                    branch_hits = b.get(branch_id, [])
+
+                    if isinstance(branch_hits, list):
+                        for i, location in enumerate(locations):
+                            total_branches += 1
+                            if i < len(branch_hits) and branch_hits[i] > 0:
+                                covered_branches += 1
+                    else:
+                        total_branches += 1
+                        if branch_hits > 0:
+                            covered_branches += 1
+
+            if total_statements > 0:
+                result["coverage_percentage"] = (
+                    covered_statements / total_statements
+                ) * 100
+                result["lines_covered"] = covered_statements
+                result["lines_total"] = total_statements
+
+            if total_branches > 0:
+                result["branch_coverage"] = (covered_branches / total_branches) * 100
+                result["branches_total"] = total_branches
+
+            return result
+
+        except Exception as e:
+            logger.error(
+                f"Error parsing coverage from coverage JSON: {str(e)}", exc_info=True
+            )
+            return {
+                "coverage_percentage": 0.0,
+                "lines_covered": 0,
+                "lines_total": 0,
+                "branch_coverage": 0.0,
+                "branches_total": 0,
             }
 
     def _parse_coverage_from_json(self, jest_json: Dict[str, Any]) -> Dict[str, Any]:
@@ -251,16 +350,13 @@ class JestAnalyzer(BaseTestAnalyzer):
             # Parse JSON
             jest_json = json.loads(json_str)
 
-            # Extract test counts
-            result["tests_total"] = jest_json.get("numTotalTests", 0)
-            result["tests_passed"] = jest_json.get("numPassedTests", 0)
-            result["tests_failed"] = jest_json.get("numFailedTests", 0)
-            result["test_suites_total"] = jest_json.get("numTotalTestSuites", 1)
-            result["test_suites_failed"] = jest_json.get("numFailedTestSuites", 0)
-
-            # Extract individual test details
+            # Extract individual test details first, then count actual test() blocks
             test_details = []
             test_results = jest_json.get("testResults", [])
+
+            tests_total = 0
+            tests_passed = 0
+            tests_failed = 0
 
             for test_suite in test_results:
                 suite_name = (
@@ -271,9 +367,15 @@ class JestAnalyzer(BaseTestAnalyzer):
                 assertion_results = test_suite.get("assertionResults", [])
 
                 for assertion in assertion_results:
+                    tests_total += 1
                     test_name = assertion.get("title", "")
                     status = assertion.get("status", "unknown")
                     failure_messages = assertion.get("failureMessages", [])
+
+                    if status == "passed":
+                        tests_passed += 1
+                    elif status == "failed":
+                        tests_failed += 1
 
                     # Extract error message if test failed
                     error_message = ""
@@ -331,6 +433,17 @@ class JestAnalyzer(BaseTestAnalyzer):
                             "error_message": error_message,
                         }
                     )
+
+            # Count test suites
+            result["test_suites_total"] = jest_json.get(
+                "numTotalTestSuites", len(test_results)
+            )
+            result["test_suites_failed"] = jest_json.get("numFailedTestSuites", 0)
+
+            # Use counts from actual test() blocks, not from numTotalTests which counts assertions
+            result["tests_total"] = tests_total
+            result["tests_passed"] = tests_passed
+            result["tests_failed"] = tests_failed
 
             result["test_details"] = test_details
             return jest_json, result
